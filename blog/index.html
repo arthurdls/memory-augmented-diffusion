@@ -8,31 +8,33 @@
   <!-- Consider removing jQuery if not used to improve load performance -->
   <link rel="shortcut icon" href="images/icon.ico">
   <style type="text/css">
-    /* Define a CSS variable for title size: adjust --title-size to change all h1 sizes */
-    :root { --title-size: 32px; }
+    /* CSS variables for title sizes */
+    :root {
+      --main-title-size: 32px;
+      --section-title-size: 20px;
+    }
     /* Consider moving CSS to an external stylesheet to leverage browser caching and improve maintainability */
     body { background-color: #121212; margin: 0; padding: 0; color: #E0E0E0; }
     .content-margin-container { display: flex; width: 100%; justify-content: left; align-items: flex-start; margin-bottom: 40px; }
-    /* Large global bottom margins can be refactored into component-specific spacing */
     .main-content-block { width: 70%; max-width: 1100px; background-color: #1E1E1E; border-left: 1px solid #333; border-right: 1px solid #333; padding: 16px; font-family: Helvetica, Arial, sans-serif; border-radius: 8px; }
     .margin-left-block, .margin-right-block { font-size: 14px; width: 15%; max-width: 200px; position: relative; text-align: left; padding: 5px; font-family: Helvetica, Arial, sans-serif; }
     img, video { max-width: 100%; height: auto; display: block; margin: auto; }
     a:link, a:visited { color: #26C6DA; text-decoration: none; }
     a:hover { color: #00ACC1; }
-    /* Use the CSS variable for h1 font size */
-    h1 { font-size: var(--title-size); margin-top: 8px; margin-bottom: 12px; color: #26C6DA; }
+    /* Main page title */
+    .main-title { font-size: var(--main-title-size); margin: 0 0 8px 0; color: #26C6DA; font-family: 'Courier New', Courier, monospace; }
+    /* Section subtitles */
+    h2 { font-size: var(--section-title-size); margin-top: 8px; margin-bottom: 12px; color: #26C6DA; }
     hr { height: 1px; border: none; background-color: #333; margin: 24px 0; }
     .citation { font-size: 0.8em; background-color: #1E1E1E; padding: 10px; border-radius: 4px; }
   </style>
 </head>
 <body>
   <!-- HEADER -->
-  <!-- Consider replacing the table structure with <header> and <hgroup> for better semantics and accessibility -->
   <div class="content-margin-container">
     <div class="margin-left-block"></div>
     <div class="main-content-block">
-      <!-- Inline style removed; h1 size now controlled via --title-size variable -->
-      <h1 style="font-family: 'Courier New', Courier, monospace;">Project Title Here</h1>
+      <h1 class="main-title">Project Title Here</h1>
       <p><strong>Authors:</strong> Your Name, Your Partner's Name</p>
       <p><strong>Course:</strong> 6.8300 Computer Vision, Spring 2025</p>
     </div>
@@ -41,7 +43,6 @@
 
   <!-- OUTLINE / TOC -->
   <div class="content-margin-container">
-    <!-- Empty margin blocks could be omitted or simulated via CSS pseudo-elements if no content is needed -->
     <div class="margin-left-block">
       <strong>Outline</strong><br><br>
       <a href="#introduction">Introduction</a><br><br>
@@ -59,7 +60,7 @@
   <section class="content-margin-container" id="introduction">
     <div class="margin-left-block"></div>
     <div class="main-content-block">
-      <h1>Introduction</h1>
+      <h2>Introduction</h2>
       <p><!-- Motivate your project. State your research question and its importance. --></p>
     </div>
     <div class="margin-right-block"></div>
@@ -69,7 +70,7 @@
   <section class="content-margin-container" id="background">
     <div class="margin-left-block"></div>
     <div class="main-content-block">
-      <h1>Background &amp; Related Work</h1>
+      <h2>Background &amp; Related Work</h2>
       <p><!-- Summarize prior literature, identify gaps, and cite key references. --></p>
     </div>
     <div class="margin-right-block"></div>
@@ -79,7 +80,7 @@
   <section class="content-margin-container" id="methods">
     <div class="margin-left-block"></div>
     <div class="main-content-block">
-      <h1>Methods &amp; Experiments</h1>
+      <h2>Methods &amp; Experiments</h2>
       <p><!-- Describe your approach, experimental setup, and figures of your method. --></p>
       <figure>
         <img src="images/method_setup.png" alt="Method Setup" />
@@ -93,7 +94,7 @@
   <section class="content-margin-container" id="results">
     <div class="margin-left-block"></div>
     <div class="main-content-block">
-      <h1>Results &amp; Analysis</h1>
+      <h2>Results &amp; Analysis</h2>
       <p><!-- Present your experimental results and analyze them quantitatively. --></p>
       <figure>
         <img src="images/results_plot.png" alt="Results Plot" />
@@ -107,7 +108,7 @@
   <section class="content-margin-container" id="conclusion">
     <div class="margin-left-block"></div>
     <div class="main-content-block">
-      <h1>Conclusion &amp; Discussion</h1>
+      <h2>Conclusion &amp; Discussion</h2>
       <p><!-- Summarize key findings, discuss implications, and mention limitations. --></p>
     </div>
     <div class="margin-right-block"></div>
@@ -117,7 +118,7 @@
   <section class="content-margin-container" id="references">
     <div class="margin-left-block"></div>
     <div class="main-content-block">
-      <h1>References</h1>
+      <h2>References</h2>
       <div class="citation">
         <!--
           [1] Author et al., Title, Journal/Conference, Year.
