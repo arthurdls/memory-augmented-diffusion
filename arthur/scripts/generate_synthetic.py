@@ -39,8 +39,7 @@ def render_frames(scene, n_frames=100):
         vis.poll_events(); vis.update_renderer()
         rgb = np.asarray(vis.capture_screen_float_buffer()) * 255
         rgb = rgb.astype(np.uint8)
-        depth = np.asarray(vis.capture_depth_float_buffer()) * 255
-        depth = depth.astype(np.uint8)
+        depth = np.asarray(vis.capture_depth_float_buffer())
 
         # save rgb and depth
         video.write(rgb)
