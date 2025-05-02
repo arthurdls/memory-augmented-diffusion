@@ -1,0 +1,5 @@
+# Core ML & graphics libs
+pip install torch torchvision torchaudio
+pip install numpy scipy pandas matplotlib open3d lpips
+# Diffusion & NeRF
+pip install diffusers transformers accelerate ninja
