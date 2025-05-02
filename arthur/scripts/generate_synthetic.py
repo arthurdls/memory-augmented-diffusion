@@ -106,8 +106,7 @@ def render_frames(
     width=640,
     height=480,
     scene_folder="data/raw/scene3/",
-    min_height=5.0,        
-    max_height=20.0,        
+    num_rotations=1,
     zoom=0.6,
 ):
     os.makedirs(scene_folder, exist_ok=True)
@@ -116,6 +115,8 @@ def render_frames(
     vis = o3d.visualization.Visualizer()
     vis.create_window(width=width, height=height, visible=False)
     vis.add_geometry(scene)
+    opt = vis.get_render_option()
+    opt.mesh_show_back_face = True
     ctr = vis.get_view_control()
 
     fourcc = cv2.VideoWriter_fourcc(*"mp4v")
@@ -139,21 +140,12 @@ def render_frames(
     # choose a radius so we're always outside the scene
     radius = np.max(bbox.get_extent()) * 1.2
 
-    # linspace of heights (world Y)
-    heights = np.linspace(center[1] - min_height,
-                          center[1] - max_height,
-                          n_frames)
-
     for i in range(n_frames):
-        # azimuth angle [0,2π)
-        theta = 2 * np.pi * i / n_frames
-        # current camera height
-        h     = heights[i]
+        theta = 2 * np.pi * i / (n_frames//num_rotations) 
 
-        # spherical → cartesian
         cam_pos = np.array([
             center[0] + radius * np.cos(theta),
-            h,
+            center[1],
             center[2] + radius * np.sin(theta),
         ])
 
