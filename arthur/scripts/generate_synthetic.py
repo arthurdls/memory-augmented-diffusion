@@ -145,18 +145,24 @@ def render_frames(
 
         cam_pos = np.array([
             center[0] + radius * np.cos(theta),
-            center[1],
+            center[1] - 10,
             center[2] + radius * np.sin(theta),
         ])
 
-        # view direction toward center
         front = center - cam_pos
         front /= np.linalg.norm(front)
 
-        # configure camera
+        world_up  = np.array([0., 1., 0.])         # y‑up in your scene
+        right = np.cross(front, world_up)
+        right /= np.linalg.norm(right)
+
+        up = np.cross(right, front)                # now guaranteed ⟂ front
+        up /= np.linalg.norm(up)
+
+        # Update the view
         ctr.set_lookat(center.tolist())
         ctr.set_front(front.tolist())
-        ctr.set_up([0.0, 1.0, 0.0])
+        ctr.set_up(up.tolist())
         ctr.set_zoom(zoom)
 
         # render
