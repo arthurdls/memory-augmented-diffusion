@@ -34,7 +34,7 @@ def render_from_tsdf(voxel_grid,
                      extrinsic,
                      resolution = (640, 480)):
     renderer = OffscreenRenderer(*resolution)
-    renderer.scene.set_background([0, 0, 0, 0])               
+    renderer.scene.set_background([255, 255, 255, 1])               
     mat = MaterialRecord()
     mat.shader = "defaultUnlit"
     renderer.scene.add_geometry("mesh", voxel_grid.extract_mesh(), mat)           
@@ -72,7 +72,8 @@ if __name__ == "__main__":
         resolution = (width, height)
         depth_range = (0.0001, 30)
         rgb, depth = render_from_tsdf(grid, intr_o3d, extr, resolution)
-        # plt.imshow(rgb)
-        # plt.show()
-        # plt.imshow(depth, cmap='gray')
-        # plt.show()
+        plt.imshow(rgb)
+        plt.show()
+        plt.imshow(depth, cmap='gray')
+        plt.show()
+        break
