@@ -1,0 +1,10 @@
+torch
+torchvision
+diffusers
+accelerate
+open3d
+numpy
+matplotlib
+scikit-image
+wandb
+omegaconf
