@@ -7,6 +7,7 @@ from PIL import Image
 import open3d as o3d
 from diffusers import StableDiffusionDepth2ImgPipeline
 from transformers import AutoImageProcessor, AutoModelForDepthEstimation
+from transformers import pipeline
 from open3d.visualization.rendering import OffscreenRenderer
 import cv2
 import torch.nn.functional as F
@@ -26,24 +27,27 @@ The generated frames are fused back into the TSDF volume so that scene memory
 persists across views. 
 """
 
+def align_scale_shift(rel, target, mask=None, eps=1e-6):
+    "OLS depth alignment"
+    if mask is None:
+        mask = torch.isfinite(target) & (target > 0)
+    rel  = rel[mask].reshape(-1).to(torch.float64)
+    tgt  = target[mask].reshape(-1).to(torch.float64)
+    mu_rel, mu_tgt = rel.mean(), tgt.mean()
+    cov = ((rel - mu_rel) * (tgt - mu_tgt)).mean()
+    var = (rel - mu_rel).pow(2).mean()
+    s = cov / (var + eps)
+    t = mu_tgt - s * mu_rel
+    return (s * rel + t).to(target.dtype).reshape(target.shape)
 
-def predict_depth(depth_net, processor, pil_rgb, ref_depth_m, dtype=torch.float16, device="cpu"):
-    # --- 1. relative prediction ------------------------------------------
-    inputs = processor(images=pil_rgb, return_tensors="pt").to(device)
-    with torch.no_grad():
-        rel = depth_net(**inputs).predicted_depth[0]       # (1,H,W)
-    rel = torch.nn.functional.interpolate(
-            rel.unsqueeze(0).unsqueeze(0), size=ref_depth_m.shape[-2:], mode="bicubic",
-            align_corners=False).squeeze(0)                # match H×W
-
-    # --- 2. scale to metric units ----------------------------------------
-    scale = torch.median(ref_depth_m[ref_depth_m>0]) / torch.median(rel)
-    abs_m = (rel * scale).clamp_min_(1e-4)
-
-    # --- 3. convert for both SD-Depth and TSDF integration ---------------
-    inv   = (1.0 / abs_m).to(dtype=dtype)              # 0-1 disparity for SD
-    depth_tsdf = abs_m.cpu().numpy()                   # float32 metres for TSDF
-    return inv.unsqueeze(0), depth_tsdf
+def predict_depth(depth_net, pil_rgb, ref_depth):
+    rel = torch.as_tensor(np.asarray(depth_net(pil_rgb)["depth"], dtype=np.float32)).to(ref_depth.device)
+    mask = torch.isfinite(ref_depth) & (ref_depth > 0)
+    depth_aligned = align_scale_shift(rel, ref_depth, mask) 
+    background_filter = (depth_aligned > torch.quantile(depth_aligned[mask], 0.40)) | (~mask)
+    depth_aligned[background_filter] = 0
+    depth_tsdf = depth_aligned.cpu().numpy().squeeze()
+    return depth_tsdf
 
 
 def depth_to_tensor(d: np.ndarray, device="cuda", dtype=torch.float16):
@@ -90,23 +94,19 @@ def main(args):
     K         = intrinsics[0]
     intr_o3d  = make_intrinsics(W, H, K[0, 0], K[1, 1], K[0, 2], K[1, 2])
 
-    model_id = "Intel/zoedepth-nyu-kitti"
-    processor  = AutoImageProcessor.from_pretrained(model_id)
-    depth_net  = AutoModelForDepthEstimation.from_pretrained(
-                    model_id).to("cpu")
+    depth_net = pipeline("depth-estimation",
+              model="depth-anything/Depth-Anything-V2-Base-hf",  # or -Large-hf
+              device="cuda")                                          # GPU
+
 
     print(f"[INFO] Bootstrapping TSDF with {seed_N} seed frames …")
     tsdf = VoxelGrid(args.voxel, args.trunc)
     for i in range(seed_N):
         tsdf.integrate(rgbs[i], depths[i], intr_o3d, extrinsics[i])
 
-    prev_rgb_pil = Image.fromarray((rgbs[seed_N - 1] * 255).astype(np.uint8))
-
     pipe      = load_depth2img_pipeline()
     generator = torch.Generator(device="cuda").manual_seed(args.seed_val)
 
-    # mesh = tsdf.extract_mesh()
-    # o3d.visualization.draw_geometries([mesh])
     renderer = OffscreenRenderer(*res)
 
     for idx in range(seed_N, N):
@@ -115,17 +115,13 @@ def main(args):
         renderer.scene.clear_geometry()
 
         extr          = extrinsics[idx]
-        _, depth_mem  = render_from_tsdf(tsdf, intr_o3d, extr, res, renderer)
+        rgb_mem, depth_mem  = render_from_tsdf(tsdf, intr_o3d, extr, res, renderer)
+        rgb_mem_pil = Image.fromarray(np.asarray(rgb_mem), "RGB")
         depth_tensor  = depth_to_tensor(depth_mem)            # (1,H,W) fp16
-
-        # plt.imshow(prev_rgb_pil)
-        # plt.show()
-        # plt.imshow(depth_mem, cmap='gray')
-        # plt.show()
 
         result = pipe(
             prompt=args.prompt,
-            image=prev_rgb_pil,
+            image=rgb_mem_pil, 
             depth_map=depth_tensor,
             strength=args.strength,
             num_inference_steps=args.steps,
@@ -133,22 +129,23 @@ def main(args):
             generator=generator,
         )
         new_rgb_pil   = result.images[0]
-        # plt.imshow(new_rgb_pil)
-        # plt.show()
-        _, depth_abs = predict_depth(depth_net, processor, new_rgb_pil, torch.from_numpy(np.asarray(depth_mem)))
-        # plt.imshow(depth_abs.squeeze(), cmap='gray')
-        # plt.show()
+        depth_pred = predict_depth(depth_net, new_rgb_pil, torch.from_numpy(np.asarray(depth_mem)))
+
+        # if idx % 10 == 0:
+        #     plt.imshow(new_rgb_pil)
+        #     plt.show()
+        #     mesh = tsdf.extract_mesh()
+        #     o3d.visualization.draw_geometries([mesh])
 
         # Fuse back into TSDF
         tsdf.integrate(
             np.asarray(new_rgb_pil).astype(np.float32) / 255.0,
-            np.asarray(depth_abs.squeeze()),
+            depth_pred,
             intr_o3d,
             extr,
         )
 
         new_rgb_pil.save(os.path.join(args.output, f"frame_{idx:04d}.png"))
-        prev_rgb_pil = new_rgb_pil
         print("done")
 
     # Visualise final mesh
@@ -161,12 +158,12 @@ def cli():
     p = argparse.ArgumentParser("Memory-augmented diffusion pipeline")
     p.add_argument("--dataset",  default="data/raw/scene2/dataset.h5")
     p.add_argument("--output",   default="data/generated/scene2")
-    p.add_argument("--frames",   type=int, default=100)
-    p.add_argument("--seed",     type=int, default=5,
+    p.add_argument("--frames",   type=int, default=200)
+    p.add_argument("--seed",     type=int, default=100,
                    help="Frames to pre-integrate before diffusion")
     p.add_argument("--prompt",   default="minecraft voxel world scene")
     p.add_argument("--steps",    type=int, default=30)
-    p.add_argument("--strength", type=float, default=0.8)
+    p.add_argument("--strength", type=float, default=0.5)
     p.add_argument("--guidance", type=float, default=7.5)
     p.add_argument("--seed_val", type=int, default=42)
     p.add_argument("--voxel",    type=float, default=0.10)
