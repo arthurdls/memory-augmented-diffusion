@@ -32,8 +32,10 @@ class VoxelGrid:
 def render_from_tsdf(voxel_grid,
                      intrinsic,
                      extrinsic,
-                     resolution = (640, 480)):
-    renderer = OffscreenRenderer(*resolution)
+                     resolution = (640, 480),
+                     renderer=None):
+    if renderer == None: 
+        renderer = OffscreenRenderer(*resolution)
     renderer.scene.set_background([255, 255, 255, 1])               
     mat = MaterialRecord()
     mat.shader = "defaultUnlit"
