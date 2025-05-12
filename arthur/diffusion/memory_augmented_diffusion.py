@@ -7,6 +7,10 @@ from PIL import Image
 import open3d as o3d
 from open3d.visualization.rendering import OffscreenRenderer, MaterialRecord
 from diffusers import StableDiffusionDepth2ImgPipeline
+import matplotlib.pyplot as plt
+import sys
+sys.path.append(os.getcwd())
+from memory.voxel_grid import VoxelGrid, make_intrinsics, render_from_tsdf
 
 """
 memory_augmented_diffusion.py
@@ -19,65 +23,20 @@ The generated frames are fused back into the TSDF volume so that scene memory
 persists across views. 
 """
 
-# ──────────────────────────────  Helper Classes  ──────────────────────────────
-def make_intrinsics(w, h, fx, fy, cx, cy):
-    intr = o3d.camera.PinholeCameraIntrinsic()
-    intr.set_intrinsics(w, h, fx, fy, cx, cy)
-    return intr
-
-
-class VoxelGrid:
-    def __init__(self, voxel=0.02, trunc=0.07):
-        self.volume = o3d.pipelines.integration.ScalableTSDFVolume(
-            voxel_length=voxel,
-            sdf_trunc=trunc,
-            color_type=o3d.pipelines.integration.TSDFVolumeColorType.RGB8,
-        )
-
-    def integrate(self, rgb, depth, intrinsic, extrinsic):
-        rgb_img   = o3d.geometry.Image((rgb * 255).astype(np.uint8))
-        depth_img = o3d.geometry.Image((depth * 1000).astype(np.uint16))
-        rgbd = o3d.geometry.RGBDImage.create_from_color_and_depth(
-            rgb_img, depth_img, depth_scale=1000.0, convert_rgb_to_intensity=False
-        )
-        self.volume.integrate(rgbd, intrinsic, extrinsic)
-
-    def mesh(self):
-        m = self.volume.extract_triangle_mesh()
-        m.compute_vertex_normals()
-        return m
-
-
-# ─────────────────────────────  Rendering Utils  ──────────────────────────────
-def render_tsdf(tsdf: VoxelGrid, intrinsic, extrinsic, res):
-    w, h = res
-    mesh = tsdf.mesh()
-
-    renderer = OffscreenRenderer(w, h)
-    renderer.scene.set_background([0, 0, 0, 0])
-
-    mat = MaterialRecord()
-    mat.shader = "defaultUnlit"
-    renderer.scene.add_geometry("scene", mesh, mat)
-    renderer.setup_camera(intrinsic, extrinsic)
-
-    rgb   = np.asarray(renderer.render_to_image())          # uint8
-    depth = np.asarray(renderer.render_to_depth_image(True))  # metres
-
-    depth[np.isinf(depth) | np.isnan(depth)] = 0.0
-
-    if hasattr(renderer, "release"):
-        renderer.release()
-    else:
-        del renderer
-    return rgb, depth
-
 
 def depth_to_tensor(d: np.ndarray, device="cuda", dtype=torch.float16):
     """
-    Convert an (H,W) depth NumPy array in metres to a (1,1,H,W) torch tensor.
+    Convert an (H,W) depth open3d image in metres to a (1,H,W) torch tensor input for Stable-Diffusion-Depth-V2.
     """
-    tens = torch.from_numpy(d).to(device=device, dtype=dtype)
+    depth = np.asarray(d)
+    finite_mask = np.isfinite(depth)
+    far_val = np.percentile(depth[finite_mask], 99)
+    depth[~finite_mask] = far_val
+    depth_inv = 1.0 / np.maximum(depth, 1e-5)
+    near  = np.percentile(depth_inv, 99)          # 1-percentile = “very near”
+    far   = np.percentile(depth_inv, 1)         # 99-percentile = “very far”
+    depth_norm = np.clip((depth_inv - far) / (near - far), 0, 1).astype("float32")
+    tens = torch.from_numpy(depth_norm).unsqueeze(0).to(device=device, dtype=dtype)
     return tens
 
 
@@ -119,12 +78,20 @@ def main(args):
     pipe      = load_depth2img_pipeline()
     generator = torch.Generator(device="cuda").manual_seed(args.seed_val)
 
+    mesh = tsdf.extract_mesh()
+    o3d.visualization.draw_geometries([mesh])
+
     for idx in range(seed_N, N):
         print(f"[INFO] Generating frame {idx + 1}/{N} …", end=" ")
 
         extr          = extrinsics[idx]
-        _, depth_mem  = render_tsdf(tsdf, intr_o3d, extr, res)
-        depth_tensor  = depth_to_tensor(depth_mem)            # (1,1,H,W) fp16
+        _, depth_mem  = render_from_tsdf(tsdf, intr_o3d, extr, res)
+        depth_tensor  = depth_to_tensor(depth_mem)            # (1,H,W) fp16
+
+        plt.imshow(prev_rgb_pil)
+        plt.show()
+        plt.imshow((depth_tensor.squeeze().cpu().numpy() * 255).astype(np.int32), cmap='gray')
+        plt.show()
 
         result = pipe(
             prompt=args.prompt,
@@ -136,11 +103,13 @@ def main(args):
             generator=generator,
         )
         new_rgb_pil   = result.images[0]
+        plt.imshow(new_rgb_pil)
+        plt.show()
 
         # Fuse back into TSDF
         tsdf.integrate(
             np.asarray(new_rgb_pil).astype(np.float32) / 255.0,
-            depth_mem,
+            np.asarray(depth_mem),
             intr_o3d,
             extr,
         )

@@ -22,7 +22,7 @@ class VoxelGrid:
         rgb_o3d = o3d.geometry.Image((rgb*255).astype(np.uint8))
         depth_o3d = o3d.geometry.Image((depth*1000).astype(np.uint16))
         rgbd = o3d.geometry.RGBDImage.create_from_color_and_depth(
-            rgb_o3d, depth_o3d, depth_scale=1000.0, depth_trunc=int(np.max(depth)), convert_rgb_to_intensity=False)
+            rgb_o3d, depth_o3d, depth_scale=1000.0, depth_trunc=99999999, convert_rgb_to_intensity=False)
         self.volume.integrate(rgbd, intrinsic, extrinsic)
 
     def extract_mesh(self):
@@ -50,7 +50,7 @@ if __name__ == "__main__":
 
     grid = VoxelGrid(0.02, 0.07)
 
-    with h5py.File('data/raw/scene3/dataset.h5','r') as f:
+    with h5py.File('data/raw/scene2/dataset.h5','r') as f:
         rgbs  = f['rgb'][()]
         depths = f['depth'][()]
         intrinsics = f['intrinsics'][()]

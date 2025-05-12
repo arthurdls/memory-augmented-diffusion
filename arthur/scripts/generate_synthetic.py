@@ -105,7 +105,7 @@ def render_frames(
     n_frames=300,
     width=640,
     height=480,
-    scene_folder="data/raw/scene3/",
+    scene_folder="data/raw/scene2/",
     num_rotations=1,
     zoom=0.6,
 ):
@@ -201,11 +201,11 @@ def render_frames(
 
 if __name__ == "__main__":
     scene = make_minecraft_scene(
-        grid_size=(10, 10),
+        grid_size=(40, 40),
         block_size=0.4,
-        sea_level=1,
-        num_hills=5,
-        num_trees=5,
+        sea_level=2,
+        num_hills=25,
+        num_trees=25,
     )
     o3d.visualization.draw_geometries([scene],
         window_name="Preview Scene",
