@@ -156,13 +156,13 @@ def main(args):
 # ───────────────────────────────────  CLI  ────────────────────────────────────
 def cli():
     p = argparse.ArgumentParser("Memory-augmented diffusion pipeline")
-    p.add_argument("--dataset",  default="data/raw/scene2/dataset.h5")
-    p.add_argument("--output",   default="data/generated/scene2")
+    p.add_argument("--dataset",  default="data/raw/scene9/dataset.h5")
+    p.add_argument("--output",   default="data/generated/scene9")
     p.add_argument("--frames",   type=int, default=200)
     p.add_argument("--seed",     type=int, default=100,
                    help="Frames to pre-integrate before diffusion")
     p.add_argument("--prompt",   default="minecraft voxel world scene")
-    p.add_argument("--steps",    type=int, default=30)
+    p.add_argument("--steps",    type=int, default=15)
     p.add_argument("--strength", type=float, default=0.5)
     p.add_argument("--guidance", type=float, default=7.5)
     p.add_argument("--seed_val", type=int, default=42)

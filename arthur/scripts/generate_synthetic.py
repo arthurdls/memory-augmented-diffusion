@@ -105,7 +105,7 @@ def render_frames(
     n_frames=300,
     width=640,
     height=480,
-    scene_folder="data/raw/scene2/",
+    scene_folder="data/raw/scene1/",
     num_rotations=2,
     zoom=0.6,
 ):
@@ -211,4 +211,4 @@ if __name__ == "__main__":
         window_name="Preview Scene",
         width=1200, height=1200,
         mesh_show_back_face=True)
-    render_frames(scene, n_frames=200) 
+    render_frames(scene, n_frames=200, scene_folder="data/raw/scene9/") 
