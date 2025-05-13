@@ -389,8 +389,8 @@
           <!-- METHODS -->
           <section id="methods">
             <h2>Methods &amp; Experiments</h2>
-
-            <h3>Phase 1: Voxel Memory Initialization</h3>
+            <h3>Method 1</h3>
+            <h4>Phase 1: Voxel Memory Initialization</h4>
             <p>
               Eight ground‐truth RGB‐D captures of a 16³ random block world are fused into a 256³ voxel grid (voxel size 0.125 m). We back-project each pixel to update occupancy and color.
             </p>
@@ -403,7 +403,7 @@
               Figure 1: (Left) ground-truth depth, (center) first-pass depth hints from voxel memory, (right) fused RGB silhouette after eight views.
             </figcaption>
 
-            <h3>Phase 2: Mesh Extraction</h3>
+            <h4>Phase 2: Mesh Extraction</h4>
             <p>
               We threshold occupancy (count > 0) and run Marching Cubes to extract a colored triangle mesh of ~78k vertices.
             </p>
@@ -414,7 +414,7 @@
               </figcaption>
             </figure>
 
-            <h3>Phase 3: Diffusion & Consistency</h3>
+            <h4>Phase 3: Diffusion & Consistency</h4>
             <p>
               For each of the four canonical views, we ray-march to obtain depth hints, feed them into ControlNet (Stable Diffusion) with a "Minecraft-style voxel art" prompt, fuse the hallucinated RGB-D, and extract a mesh (Phase 3 Diffusion). We then re-render held-out angles, hallucinate, and re-fuse to enforce multi-view consistency (Phase 3 Consistency).
             </p>
@@ -425,7 +425,7 @@
               </figcaption>
             </figure>
 
-            <h3>Interactive Walkthroughs</h3>
+            <h5>Interactive Walkthroughs</h5>
             <div class="video-grid">
               <div class="video-item">
                 <video src="images/phase1.mp4" autoplay loop muted playsinline></video>
@@ -444,6 +444,88 @@
                 <figcaption>Video 4: Phase 3 multi-view consistency.</figcaption>
               </div>
             </div>
+            <!-- ───────────────────────── Arthur – Scene Data & Controls ───────────────────────── -->
+          <h3 id="arthur">Method 2 – Arthur’s Pipeline</h3>
+
+          <h4>Phase 1: Scene Data Generation (Raw World)</h4>
+          <p>
+            Each synthetic Minecraft-style world is procedurally generated, rendered from 200 orbiting viewpoints, and stored with RGB-D, extrinsic, and intrinsic information.
+          </p>
+
+          <div class="video-grid">
+            <div class="video-item">
+              <video src="images/arthur/raw/scene1.mp4" autoplay loop muted playsinline></video>
+              <figcaption>Raw Scene 1</figcaption>
+            </div>
+            <div class="video-item">
+              <video src="images/arthur/raw/scene2.mp4" autoplay loop muted playsinline></video>
+              <figcaption>Raw Scene 2</figcaption>
+            </div>
+            <div class="video-item">
+              <video src="images/arthur/raw/scene3.mp4" autoplay loop muted playsinline></video>
+              <figcaption>Raw Scene 3</figcaption>
+            </div>
+            <!-- <div class="video-item">
+              <video src="images/arthur/control/scene1.mp4" autoplay loop muted playsinline></video>
+              <figcaption>Control Diffusion (no RGB-D) Scene 1</figcaption>
+            </div> -->
+          </div>
+
+          <h4>Phase 2: Scene Representation (TSDF Voxel Grid)</h4>
+          <p>
+            Of the 200 RGB-D frames, 100 fuse into a scalable TSDF (voxel size <span style="white-space:nowrap;">v<sub>s</sub></span>,
+            truncation <span style="white-space:nowrap;">τ</span> per Table 1) using open3d's integration function.
+            This volume serves two roles: (i) produces geometry-aware depth hints;
+            (ii) maintains persistent memory for multi-view diffusion generation.
+          </p>
+
+          <h4>Phase 3: Memory-Augmented Diffusion</h4>
+          <p>
+            Given the live TSDF, we render an RGB frame <code>R<sub>mem</sub></code> and a
+            metric depth map <code>D<sub>mem</sub></code> for the next camera pose
+            (intrinsic, extrinsic) for the remaining 100 frames of the scene.
+            These tensors are then passed to
+            <code>StableDiffusionDepth2Img</code> together with the text prompt.
+            Hyper-parameters (<em>strength, guidance, steps, voxel size, truncation</em>)
+            are varied across nine test scenes (Table 1).  A <code>--control</code> flag
+            disables RGB-D conditioning, producing a baseline “guess” of what diffusion
+            alone would generate.
+          </p>
+
+          <table>
+            <tr><th>Scene</th><th>str</th><th>guid.</th><th>v<sub>s</sub></th><th>τ</th><th>steps</th></tr>
+            <tr><td>1</td><td>0.25</td><td>7.5</td><td>0.10</td><td>0.30</td><td>30</td></tr>
+            <tr><td>2</td><td>0.50</td><td>7.5</td><td>0.10</td><td>0.30</td><td>30</td></tr>
+            <tr><td>3</td><td>0.75</td><td>7.5</td><td>0.10</td><td>0.30</td><td>30</td></tr>
+            <tr><td>4</td><td>0.50</td><td>7.5</td><td>0.06</td><td>0.20</td><td>30</td></tr>
+            <tr><td>5</td><td>0.50</td><td>7.5</td><td>0.20</td><td>0.60</td><td>30</td></tr>
+            <tr><td>6</td><td>0.50</td><td>15</td><td>0.10</td><td>0.30</td><td>30</td></tr>
+            <tr><td>7</td><td>0.50</td><td>3</td><td>0.10</td><td>0.30</td><td>30</td></tr>
+            <tr><td>8</td><td>0.50</td><td>7.5</td><td>0.10</td><td>0.30</td><td>60</td></tr>
+            <tr><td>9</td><td>0.50</td><td>7.5</td><td>0.10</td><td>0.30</td><td>15</td></tr>
+            <caption style="caption-side:bottom; margin-bottom:8px;"><strong>Table 1: Per-scene hyper-parameters</strong></caption>
+          </table>
+
+          <div class="image-comparison">
+            <figure>
+              <video src="images/arthur/raw/scene2.mp4"  autoplay loop muted playsinline></video>
+              <figcaption>Raw orbit (ground-truth RGB-D)</figcaption>
+            </figure>
+            <figure>
+              <video src="images/arthur/control/scene2.mp4" autoplay loop muted playsinline></video>
+              <figcaption>Control diffusion (no memory)</figcaption>
+            </figure>
+            <figure>
+              <video src="images/arthur/generated/scene2.mp4" autoplay loop muted playsinline></video>
+              <figcaption>Memory-conditioned result</figcaption>
+            </figure>
+          </div>
+          <figcaption>
+            Figure N: For <strong>Scene 2</strong> (strength 0.5, voxel 0.10 m, truncation 0.30 m) the
+            memory-conditioned run preserves the hill silhouette and tree trunks, whereas
+            the control run completely reshuffles block colours and heights.
+          </figcaption>
+
           </section>
 
           <!-- RESULTS -->
