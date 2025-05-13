@@ -108,6 +108,7 @@ def main(args):
     generator = torch.Generator(device="cuda").manual_seed(args.seed_val)
 
     renderer = OffscreenRenderer(*res)
+    prev_rgb_pil = Image.fromarray((rgbs[seed_N-1] * 255).astype(np.uint8))
 
     for idx in range(seed_N, N):
         print(f"[INFO] Generating frame {idx + 1}/{N} …", end=" ")
@@ -118,35 +119,49 @@ def main(args):
         rgb_mem, depth_mem  = render_from_tsdf(tsdf, intr_o3d, extr, res, renderer)
         rgb_mem_pil = Image.fromarray(np.asarray(rgb_mem), "RGB")
         depth_tensor  = depth_to_tensor(depth_mem)            # (1,H,W) fp16
+        if args.control:
+            result = pipe(
+                prompt=args.prompt,
+                image=prev_rgb_pil, 
+                strength=args.strength,
+                num_inference_steps=args.steps,
+                guidance_scale=args.guidance,
+                generator=generator,
+            )
+            new_rgb_pil   = result.images[0]
 
-        result = pipe(
-            prompt=args.prompt,
-            image=rgb_mem_pil, 
-            depth_map=depth_tensor,
-            strength=args.strength,
-            num_inference_steps=args.steps,
-            guidance_scale=args.guidance,
-            generator=generator,
-        )
-        new_rgb_pil   = result.images[0]
-        depth_pred = predict_depth(depth_net, new_rgb_pil, torch.from_numpy(np.asarray(depth_mem)))
+            new_rgb_pil.save(os.path.join(args.output, f"frame_{idx:04d}.png"))
+            print("done")
+            prev_rgb_pil = new_rgb_pil
+        else:
+            result = pipe(
+                prompt=args.prompt,
+                image=rgb_mem_pil, 
+                depth_map=depth_tensor,
+                strength=args.strength,
+                num_inference_steps=args.steps,
+                guidance_scale=args.guidance,
+                generator=generator,
+            )
+            new_rgb_pil   = result.images[0]
+            depth_pred = predict_depth(depth_net, new_rgb_pil, torch.from_numpy(np.asarray(depth_mem)))
 
-        # if idx % 10 == 0:
-        #     plt.imshow(new_rgb_pil)
-        #     plt.show()
-        #     mesh = tsdf.extract_mesh()
-        #     o3d.visualization.draw_geometries([mesh])
+            # if idx % 10 == 0:
+            #     plt.imshow(new_rgb_pil)
+            #     plt.show()
+            #     mesh = tsdf.extract_mesh()
+            #     o3d.visualization.draw_geometries([mesh])
 
-        # Fuse back into TSDF
-        tsdf.integrate(
-            np.asarray(new_rgb_pil).astype(np.float32) / 255.0,
-            depth_pred,
-            intr_o3d,
-            extr,
-        )
+            # Fuse back into TSDF
+            tsdf.integrate(
+                np.asarray(new_rgb_pil).astype(np.float32) / 255.0,
+                depth_pred,
+                intr_o3d,
+                extr,
+            )
 
-        new_rgb_pil.save(os.path.join(args.output, f"frame_{idx:04d}.png"))
-        print("done")
+            new_rgb_pil.save(os.path.join(args.output, f"frame_{idx:04d}.png"))
+            print("done")
 
     # Visualise final mesh
     mesh = tsdf.extract_mesh()
@@ -157,7 +172,7 @@ def main(args):
 def cli():
     p = argparse.ArgumentParser("Memory-augmented diffusion pipeline")
     p.add_argument("--dataset",  default="data/raw/scene9/dataset.h5")
-    p.add_argument("--output",   default="data/generated/scene9")
+    p.add_argument("--output",   default="data/control/scene9")
     p.add_argument("--frames",   type=int, default=200)
     p.add_argument("--seed",     type=int, default=100,
                    help="Frames to pre-integrate before diffusion")
@@ -168,6 +183,7 @@ def cli():
     p.add_argument("--seed_val", type=int, default=42)
     p.add_argument("--voxel",    type=float, default=0.10)
     p.add_argument("--trunc",    type=float, default=0.30)
+    p.add_argument("--control",  type=bool, default=True)
     main(p.parse_args())
 
 
