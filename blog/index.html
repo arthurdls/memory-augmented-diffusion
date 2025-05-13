@@ -2,141 +2,566 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Final Project Blog Template</title>
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
-  <!-- Consider removing jQuery if not used to improve load performance -->
-  <link rel="shortcut icon" href="images/icon.ico">
+  <title>Memory-Augmented Diffusion for Minecraft-Style Worlds</title>
   <style type="text/css">
-    /* CSS variables for title sizes */
     :root {
-      --main-title-size: 32px;
-      --section-title-size: 20px;
+      --main-title-size: 36px;
+      --section-title-size: 24px;
+      --subsection-title-size: 20px;
+      --primary-color: #26C6DA;
+      --primary-hover: #00ACC1;
+      --bg-color: #121212;
+      --content-bg: #1E1E1E;
+      --border-color: #333;
+      --text-color: #E0E0E0;
+      --caption-color: #BBB;
+      --sidebar-width: 220px;
     }
-    /* Consider moving CSS to an external stylesheet to leverage browser caching and improve maintainability */
-    body { background-color: #121212; margin: 0; padding: 0; color: #E0E0E0; }
-    .content-margin-container { display: flex; width: 100%; justify-content: left; align-items: flex-start; margin-bottom: 40px; }
-    .main-content-block { width: 70%; max-width: 1100px; background-color: #1E1E1E; border-left: 1px solid #333; border-right: 1px solid #333; padding: 16px; font-family: Helvetica, Arial, sans-serif; border-radius: 8px; }
-    .margin-left-block, .margin-right-block { font-size: 14px; width: 15%; max-width: 200px; position: relative; text-align: left; padding: 5px; font-family: Helvetica, Arial, sans-serif; }
-    img, video { max-width: 100%; height: auto; display: block; margin: auto; }
-    a:link, a:visited { color: #26C6DA; text-decoration: none; }
-    a:hover { color: #00ACC1; }
-    /* Main page title */
-    .main-title { font-size: var(--main-title-size); margin: 0 0 8px 0; color: #26C6DA; font-family: 'Courier New', Courier, monospace; }
-    /* Section subtitles */
-    h2 { font-size: var(--section-title-size); margin-top: 8px; margin-bottom: 12px; color: #26C6DA; }
-    hr { height: 1px; border: none; background-color: #333; margin: 24px 0; }
-    .citation { font-size: 0.8em; background-color: #1E1E1E; padding: 10px; border-radius: 4px; }
+    
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+    }
+    
+    .page-layout {
+      display: flex;
+      min-height: 100vh;
+    }
+    
+    .sidebar {
+      width: var(--sidebar-width);
+      background-color: #1A1A1A;
+      position: fixed;
+      height: 100vh;
+      overflow-y: auto;
+      padding: 30px 20px;
+      box-shadow: 2px 0 10px rgba(0,0,0,0.3);
+      z-index: 100;
+    }
+    
+    .sidebar-title {
+      color: var(--primary-color);
+      font-size: 18px;
+      font-weight: bold;
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border-color);
+    }
+    
+    .sidebar ul {
+      list-style-type: none;
+      padding: 0;
+      margin: 0;
+    }
+    
+    .sidebar li {
+      margin-bottom: 12px;
+    }
+    
+    .sidebar a {
+      color: var(--text-color);
+      text-decoration: none;
+      display: block;
+      padding: 8px 10px;
+      border-radius: 4px;
+      transition: all 0.2s ease;
+    }
+    
+    .sidebar a:hover {
+      background-color: rgba(38, 198, 218, 0.1);
+      color: var(--primary-color);
+      transform: translateX(5px);
+    }
+    
+    .main-content {
+      flex: 1;
+      margin-left: var(--sidebar-width);
+      padding: 40px;
+    }
+    
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+    
+    .content {
+      background: var(--content-bg);
+      border-radius: 8px;
+      padding: 40px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+    }
+    
+    p { 
+      line-height: 1.7;
+      margin-bottom: 20px;
+    }
+    
+    img, video { 
+      max-width: 100%;
+      display: block;
+      margin: 0 auto;
+      border-radius: 6px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    
+    a { 
+      color: var(--primary-color);
+      text-decoration: none;
+      transition: color 0.2s ease;
+    }
+    
+    a:hover { 
+      color: var(--primary-hover);
+    }
+    
+    .main-title { 
+      font-size: var(--main-title-size);
+      margin: 0 0 16px 0;
+      color: var(--primary-color);
+      font-family: 'Courier New', Courier, monospace;
+      letter-spacing: -0.5px;
+      border-bottom: 2px solid var(--primary-color);
+      padding-bottom: 10px;
+      display: inline-block;
+    }
+    
+    h2 {
+      font-size: var(--section-title-size);
+      margin-top: 40px;
+      margin-bottom: 20px;
+      color: var(--primary-color);
+      border-left: 4px solid var(--primary-color);
+      padding-left: 12px;
+    }
+    
+    h3 {
+      font-size: var(--subsection-title-size);
+      margin-top: 30px;
+      margin-bottom: 15px;
+      color: var(--primary-color);
+    }
+    
+    figure { 
+      margin: 30px 0;
+      text-align: center;
+    }
+    
+    figcaption {
+      font-size: 0.9em;
+      color: var(--caption-color);
+      margin-top: 10px;
+      font-style: italic;
+    }
+    
+    hr { 
+      height: 1px;
+      border: none;
+      background-color: var(--border-color);
+      margin: 40px 0;
+    }
+    
+    .citation { 
+      font-size: 0.9em;
+      background-color: #252525;
+      padding: 15px;
+      border-radius: 6px;
+      border-left: 3px solid var(--primary-color);
+      margin-top: 30px;
+    }
+    
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 25px 0;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      overflow: hidden;
+      border-radius: 6px;
+    }
+    
+    th, td {
+      border: 1px solid var(--border-color);
+      padding: 12px;
+      text-align: center;
+    }
+    
+    th { 
+      background: #2A2A2A;
+      color: var(--primary-color);
+      font-weight: bold;
+    }
+    
+    tr:hover {
+      background-color: rgba(38, 198, 218, 0.05);
+    }
+    
+    .image-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 15px;
+      margin: 30px 0;
+    }
+    
+    .image-row img {
+      flex: 1;
+      object-fit: cover;
+      max-height: 250px;
+      width: auto;
+    }
+    
+    .video-container {
+      margin: 30px 0;
+    }
+    
+    .video-container video {
+      width: 100%;
+      max-height: 400px;
+    }
+    
+    .author-info {
+      display: flex;
+      align-items: center;
+      margin-bottom: 30px;
+    }
+    
+    .author-info p {
+      margin: 0 20px 0 0;
+    }
+    
+    .references {
+      background: #252525;
+      border-left: 3px solid var(--primary-color);
+      padding: 20px;
+      border-radius: 6px;
+      margin-top: 40px;
+    }
+    
+    .references ol {
+      margin: 10px 0 0 0;
+      padding-left: 1.5em;
+    }
+    
+    .references li {
+      margin-bottom: 10px;
+      line-height: 1.5;
+    }
+    
+    strong {
+      color: #fff;
+    }
+    
+    em {
+      color: var(--primary-color);
+      font-style: italic;
+    }
+    
+    .image-comparison {
+      display: flex;
+      justify-content: space-between;
+      gap: 20px;
+      margin: 30px 0;
+    }
+    
+    .image-comparison figure {
+      flex: 1;
+      margin: 0;
+    }
+    
+    .video-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+      margin: 30px 0;
+    }
+    
+    .video-item {
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .video-item video {
+      width: 100%;
+      max-height: 300px;
+      object-fit: cover;
+    }
+    
+    .video-item figcaption {
+      margin-top: 8px;
+      text-align: center;
+    }
+    
+    @media (max-width: 768px) {
+      .video-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+    
+    @media (max-width: 1024px) {
+      .sidebar {
+        width: 200px;
+      }
+      
+      .main-content {
+        margin-left: 200px;
+      }
+    }
+    
+    @media (max-width: 768px) {
+      .page-layout {
+        flex-direction: column;
+      }
+      
+      .sidebar {
+        width: 100%;
+        height: auto;
+        position: relative;
+        padding: 15px;
+      }
+      
+      .main-content {
+        margin-left: 0;
+        padding: 20px;
+      }
+      
+      .image-row, .image-comparison {
+        flex-direction: column;
+      }
+      
+      .image-row img, .image-comparison figure {
+        max-height: none;
+      }
+      
+      .video-grid {
+        grid-template-columns: 1fr;
+      }
+    }
   </style>
 </head>
 <body>
-  <!-- HEADER -->
-  <div class="content-margin-container">
-    <div class="margin-left-block"></div>
-    <div class="main-content-block">
-      <h1 class="main-title">Memory Augmented Diffusion</h1>
-      <p><strong>Co-Authors:</strong> Arthur De Los Santos, Joachim Asare</p>
-      <p><strong>Course:</strong> 6.8300 Computer Vision, Spring 2025</p>
+  <div class="page-layout">
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+      <div class="sidebar-title">Contents</div>
+      <ul>
+        <li><a href="#introduction">Introduction</a></li>
+        <li><a href="#background">Background &amp; Related Work</a></li>
+        <li><a href="#methods">Methods &amp; Experiments</a></li>
+        <li><a href="#results">Results &amp; Analysis</a></li>
+        <li><a href="#conclusion">Conclusion &amp; Discussion</a></li>
+        <li><a href="#references">References</a></li>
+      </ul>
     </div>
-    <div class="margin-right-block"></div>
-  </div>
 
-  <!-- OUTLINE / TOC -->
-  <div class="content-margin-container">
-    <div class="margin-left-block">
-      <strong>Outline</strong><br><br>
-      <a href="#introduction">Introduction</a><br><br>
-      <a href="#background">Background &amp; Related Work</a><br><br>
-      <a href="#methods">Methods &amp; Experiments</a><br><br>
-      <a href="#results">Results &amp; Analysis</a><br><br>
-      <a href="#conclusion">Conclusion &amp; Discussion</a><br><br>
-      <a href="#references">References</a>
-    </div>
-    <div class="main-content-block">
-      <img
-        src="images/title_image.png"
-        alt="Memory Augmented Diffusion Illustration"
-        class="header-image"
-      />
-    </div>
-    <div class="margin-right-block"></div>
-  </div>
+    <!-- MAIN CONTENT -->
+    <div class="main-content">
+      <div class="container">
+        <div class="content">
+          <!-- HEADER -->
+          <h1 class="main-title">Memory-Augmented Diffusion for Minecraft-Style Worlds</h1>
+          <div class="author-info">
+            <p><strong>Co-Authors:</strong> Arthur De Los Santos, Joachim Asare</p>
+            <p><strong>Course:</strong> 6.8300 Advances in Computer Vision, Spring 2025</p>
+          </div>
+          <hr>
 
-  <!-- INTRODUCTION -->
-  <section class="content-margin-container" id="introduction">
-    <div class="margin-left-block"></div>
-    <div class="main-content-block">
-      <h2>Introduction</h2>
-      <p><!-- Motivate your project. State your research question and its importance. -->
+          <!-- INTRO -->
+          <section id="introduction">
+            <h2>Introduction</h2>
+            <p>
+              We present a pipeline that fuses sparse RGB-D captures into a persistent voxel grid, uses depth-conditioned diffusion to hallucinate textures in unobserved regions, and then enforces multi-view consistency—ultimately generating stylized, Minecraft-like 3D scenes from only a handful of real images.
+            </p>
+            <p>
+              We explore how persistent 3D scene memory can be integrated with a diffusion model to maintain world consistency in a Minecraft-style environment. Our approach combines a Stable Diffusion model (augmented via ControlNet for structure guidance) with an explicit voxel-based memory that is updated as the virtual camera moves. The goal is to prevent the model from "forgetting" previously seen content and to hallucinate plausible unseen regions in a geometrically consistent way. We implemented the system in phases: a baseline diffusion without memory (Phase 1), an integrated memory with partial updates (Phase 2), and a full memory-augmented diffusion with an additional consistency enforcement step (Phase 3). Below we present our findings, including quantitative metrics and qualitative results, and discuss strengths, limitations, and connections to prior work.
+            </p>
+          </section>
 
+          <!-- BACKGROUND -->
+          <section id="background">
+            <h2>Background &amp; Related Work</h2>
+            <p>
+              Neural Radiance Fields (NeRF) achieve high-quality novel-view synthesis but require dense viewpoints. Voxel-based fusion methods (e.g. KinectFusion) efficiently accumulate 3D geometry but lack texture hallucination. ControlNet adds depth conditioning to 2D diffusion; we extend this to a volumetric memory.
+            </p>
+          </section>
 
-      </p>
-    </div>
-    <div class="margin-right-block"></div>
-  </section>
+          <!-- METHODS -->
+          <section id="methods">
+            <h2>Methods &amp; Experiments</h2>
 
-  <!-- BACKGROUND & RELATED WORK -->
-  <section class="content-margin-container" id="background">
-    <div class="margin-left-block"></div>
-    <div class="main-content-block">
-      <h2>Background &amp; Related Work</h2>
-      <p><!-- Summarize prior literature, identify gaps, and cite key references. --></p>
-    </div>
-    <div class="margin-right-block"></div>
-  </section>
+            <h3>Phase 1: Voxel Memory Initialization</h3>
+            <p>
+              Eight ground‐truth RGB‐D captures of a 16³ random block world are fused into a 256³ voxel grid (voxel size 0.125 m). We back-project each pixel to update occupancy and color.
+            </p>
+            <div class="image-row">
+              <img src="images/phase1_depth.png" alt="GT Depth Map">
+              <img src="images/phase1_depth_hint.png" alt="Voxel Depth Hint">
+              <img src="images/phase1_rgb.png" alt="Fused RGB">
+            </div>
+            <figcaption>
+              Figure 1: (Left) ground-truth depth, (center) first-pass depth hints from voxel memory, (right) fused RGB silhouette after eight views.
+            </figcaption>
 
-  <!-- METHODS & EXPERIMENTS -->
-  <section class="content-margin-container" id="methods">
-    <div class="margin-left-block"></div>
-    <div class="main-content-block">
-      <h2>Methods &amp; Experiments</h2>
-      <p><!-- Describe your approach, experimental setup, and figures of your method. --></p>
-      <figure>
-        <img src="images/method_setup.png" alt="Method Setup" />
-        <figcaption>Figure 1: Method or experimental setup.</figcaption>
-      </figure>
-    </div>
-    <div class="margin-right-block"></div>
-  </section>
+            <h3>Phase 2: Mesh Extraction</h3>
+            <p>
+              We threshold occupancy (count > 0) and run Marching Cubes to extract a colored triangle mesh of ~78k vertices.
+            </p>
+            <figure>
+              <img src="images/phase2_mesh.png" alt="Phase 2 Mesh" style="max-height: 400px;">
+              <figcaption>
+                Figure 2: Raw mesh after Phase 2 Marching Cubes.
+              </figcaption>
+            </figure>
 
-  <!-- RESULTS & ANALYSIS -->
-  <section class="content-margin-container" id="results">
-    <div class="margin-left-block"></div>
-    <div class="main-content-block">
-      <h2>Results &amp; Analysis</h2>
-      <p><!-- Present your experimental results and analyze them quantitatively. --></p>
-      <figure>
-        <img src="images/results_plot.png" alt="Results Plot" />
-        <figcaption>Figure 2: Experimental results.</figcaption>
-      </figure>
-    </div>
-    <div class="margin-right-block"></div>
-  </section>
+            <h3>Phase 3: Diffusion & Consistency</h3>
+            <p>
+              For each of the four canonical views, we ray-march to obtain depth hints, feed them into ControlNet (Stable Diffusion) with a "Minecraft-style voxel art" prompt, fuse the hallucinated RGB-D, and extract a mesh (Phase 3 Diffusion). We then re-render held-out angles, hallucinate, and re-fuse to enforce multi-view consistency (Phase 3 Consistency).
+            </p>
+            <figure>
+              <img src="images/phase3_diffusion_mesh.png" alt="Phase 3 Diffusion Mesh" style="max-height: 400px;">
+              <figcaption>
+                Figure 3: Mesh after diffusion-based texture hallucination (Phase 3 Diffusion). Notice increased coverage but visible shape artifacts (gaps and spikes).
+              </figcaption>
+            </figure>
 
-  <!-- CONCLUSION & DISCUSSION -->
-  <section class="content-margin-container" id="conclusion">
-    <div class="margin-left-block"></div>
-    <div class="main-content-block">
-      <h2>Conclusion &amp; Discussion</h2>
-      <p><!-- Summarize key findings, discuss implications, and mention limitations. --></p>
-    </div>
-    <div class="margin-right-block"></div>
-  </section>
+            <h3>Interactive Walkthroughs</h3>
+            <div class="video-grid">
+              <div class="video-item">
+                <video src="images/phase1.mp4" autoplay loop muted playsinline></video>
+                <figcaption>Video 1: Phase 1 fusion.</figcaption>
+              </div>
+              <div class="video-item">
+                <video src="images/Phase2.mp4" autoplay loop muted playsinline></video>
+                <figcaption>Video 2: Phase 2 mesh extraction.</figcaption>
+              </div>
+              <div class="video-item">
+                <video src="images/phase3_diffusion.mp4" autoplay loop muted playsinline></video>
+                <figcaption>Video 3: Phase 3 diffusion fusion.</figcaption>
+              </div>
+              <div class="video-item">
+                <video src="images/phase3_consistency.mp4" autoplay loop muted playsinline></video>
+                <figcaption>Video 4: Phase 3 multi-view consistency.</figcaption>
+              </div>
+            </div>
+          </section>
 
-  <!-- REFERENCES -->
-  <section class="content-margin-container" id="references">
-    <div class="margin-left-block"></div>
-    <div class="main-content-block">
-      <h2>References</h2>
-      <div class="citation">
-        <!--
-          [1] Author et al., Title, Journal/Conference, Year.
-          [2] Another reference.
-        -->
+          <!-- RESULTS -->
+          <section id="results">
+            <h2>Results &amp; Analysis</h2>
+
+            <h3>Phase 1 Coverage & Depth Error</h3>
+            <p><strong>Phase 1 – Baseline Diffusion (No Memory):</strong> In the first phase, the diffusion model was run with basic conditioning (an initial depth hint) but without any persistent memory of the scene. We found that while the model can produce photorealistic frames from a single viewpoint, it struggles with consistency across views. As the camera moves, the diffusion model often <em>hallucinates</em> new structures or forgets previously seen ones. For example, when the camera rotates to reveal unseen areas, the model has no knowledge of those regions and fails to generate coherent content there. We provided the model with a depth hint from the initial view via ControlNet, but once the viewpoint changed, this hint became misaligned with the true scene geometry. The <em>Depth Hint Absolute Error</em> heatmap in Figure 4 illustrates this issue: areas in bright colors indicate large discrepancies (up to ~25 meters) between the provided depth hint and the ground-truth depth after the camera moved. These large errors confirm that a single-view hint is insufficient for novel view synthesis – the diffusion model was essentially guessing content for regions outside the initial view, leading to inconsistency.</p>
+            
+            <table>
+              <tr><th>View</th><th>Coverage (%)</th></tr>
+              <tr><td>1</td><td>10.00</td></tr>
+              <tr><td>2</td><td>21.07</td></tr>
+              <tr><td>3</td><td>31.52</td></tr>
+              <tr><td>4</td><td>43.81</td></tr>
+              <tr><td>5</td><td>54.47</td></tr>
+              <tr><td>6</td><td>67.29</td></tr>
+              <tr><td>7</td><td>78.29</td></tr>
+              <tr><td>8</td><td>91.18</td></tr>
+            </table>
+            
+            <p>
+              Coverage increases nearly linearly as more viewpoints are fused, reaching 91% by view 8. However, only ~32% of pixels have valid depth hints (mean absolute error 12.61 m, max 29.31 m), indicating imprecise geometry for distant blocks.
+            </p>
+            
+            <figure>
+              <img src="images/phase1_error.png" alt="Phase 1 Error Heatmap" style="max-width: 80%; max-height: 350px;">
+              <figcaption>
+                Figure 4: Absolute depth error where hints exist. High errors (orange) occur at farthest surfaces. This heatmap shows where the depth hint provided to ControlNet is very inaccurate when the viewpoint changes, leading the diffusion model to hallucinate or distort scene content in those areas.
+              </figcaption>
+            </figure>
+            
+            <p>This failure mode is evident in the rendered video as well. The clip above (Video 1) shows a short camera pan with the Phase 1 baseline. As the view changes and returns, objects do not remain consistent – some blocks appear, disappear, or change color/shape. Notably, when the camera looks behind initial structures, the model does not render the back faces at all (they often appear as black or random textures), demonstrating <strong>zero novel-view coverage</strong> for surfaces that were never observed. By the time the camera returns to the original angle, the scene has drifted: the final view deviates from the starting view, highlighting poor temporal consistency.</p>
+
+            <h3>Phase 2 – Integrating Spatial Memory</h3>
+            <p><strong>Phase 2 – Integrating Spatial Memory (Partial Reconstruction):</strong> In Phase 2, we introduced a structured voxel grid as a persistent scene memory, akin to the approach of KinectFusion, to integrate depth observations over time. As the camera moved, depth from each new view was fused into this voxel representation (using truncated signed distance functions for surface mapping, similar to KinectFusion). This allowed the system to accumulate a partial 3D model of the scene in memory. The diffusion model could then be conditioned not just on the current view's hint, but also on the memory-derived depth for known regions. The impact was immediately visible: previously seen surfaces stayed much more consistent in appearance and position, since the model was now guided by the stored geometry.</p>
+            
+            <p>Figure 2 shows the extracted mesh from the voxel memory after a limited camera sweep in Phase 2. Only surfaces that the camera has observed are present; they appear as isolated black fragments corresponding to the front faces of the Minecraft-style blocks. This partial reconstruction demonstrates one strength of Phase 2: the memory successfully preserves seen content. However, the limitations are also clear – large portions of the scene remain missing (e.g., the hidden faces and any areas never viewed). In other words, Phase 2's memory is accurate but incomplete. The system does not yet attempt to generate new geometry for unseen regions; it simply leaves them blank.</p>
+
+            <h3>Phase 3 – Memory-Augmented Diffusion</h3>
+            <p><strong>Phase 3 – Memory-Augmented Diffusion (Hallucination of Unseen Regions):</strong> In Phase 3, we leveraged the accumulated memory to actively guide the diffusion model in filling out the scene, including regions not directly observed. Here we introduced two variants: <em>Phase 3 Diffusion</em> and <em>Phase 3 Consistency</em>. In the Phase 3 Diffusion stage, the model was conditioned on both the current view's known depth and the global memory structure. Crucially, if the memory indicated empty or unknown space (for example, the back of a block that hadn't been seen), the diffusion model was encouraged to hallucinate plausible content to occupy that space.</p>
+            
+            <p>Figure 3 depicts the mesh after Phase 3 Diffusion. We see a much denser, more complete set of surfaces (rendered in gray) compared to Phase 2's sparse black fragments. The model has hallucinated the backs and even some unseen internal parts of the scene, guided by the memory's structure. This dramatically increased the <strong>coverage</strong> of the scene: the fraction of ground-truth surfaces that have a corresponding generated surface went up substantially. However, these hallucinated surfaces are not guaranteed to be geometrically accurate – they are the model's best guess.</p>
+
+            <h3>Phase 3 – Enforcing Multi-View Consistency</h3>
+            <p><strong>Phase 3 – Enforcing Multi-View Consistency:</strong> After obtaining the hallucinated full scene from Phase 3 Diffusion, we applied an additional consistency refinement step (Phase 3 Consistency). The goal here was to ensure that the hallucinated content remains self-consistent when viewed from multiple angles, improving geometric fidelity. We achieved this by using the accumulated voxel memory as a constraint: any new view rendered must align with the memory's surfaces. This process is conceptually similar to approaches like DreamFusion or Scene Representation Transformer, which aim for a consistent underlying scene representation that can render from any angle.</p>
+            
+            <p>This consistency enforcement did have a side effect: it sometimes reduced the visual detail on those surfaces because the diffusion model had less freedom to alter them. The images became slightly more blurred or simple on consistent surfaces, as the model essentially had to obey the memory. Thus, we observe a classic quality vs. consistency trade-off: Phase 3 Diffusion produced the most visually detailed hallucinations, whereas Phase 3 Consistency prioritized ensuring those features didn't contradict across views.</p>
+
+            <h3>Quantitative Evaluation</h3>
+            <p><strong>Quantitative Evaluation:</strong> We evaluated our approach using several metrics. First, we measured <em>coverage</em>, defined as the percentage of ground-truth surface area that our generated outputs successfully reconstruct or cover in novel views. Second, we computed the <em>mean absolute error (MAE)</em> in depth for the generated surfaces, comparing the model's output depth to the ground-truth depth map at corresponding pixels. We also tracked image-based metrics (PSNR and SSIM) for frames where ground-truth images were available.</p>
+            
+            <div class="image-comparison">
+              <figure>
+                <img src="images/eval_phase3_diffusion.png" alt="Phase 3 Diffusion Eval">
+                <figcaption>Figure 5a: Phase 3 Diffusion Evaluation</figcaption>
+              </figure>
+              <figure>
+                <img src="images/eval_phase3_consistency.png" alt="Phase 3 Consistency Eval">
+                <figcaption>Figure 5b: Phase 3 Consistency Evaluation</figcaption>
+              </figure>
+            </div>
+            <figcaption>
+              Figure 5: Quantitative evaluation of multi-view reconstruction for Phase 3. (a) <em>Phase 3 Diffusion Eval:</em> The green line shows coverage percentage as novel view angle increases; coverage drops from ~35% at 50° to 0% by 150°. The blue square indicates depth MAE at 50° (~14.8 m). (b) <em>Phase 3 Consistency Eval:</em> With consistency enforcement, coverage at 50° is slightly lower (~28%) but depth MAE improves to ~14.2 m, reflecting more accurate geometry.
+            </figcaption>
+            
+            <p>The plots in Figure 5 summarize the multi-view consistency evaluation for Phase 3, comparing the Diffusion-only vs. Consistency-refined approaches. For Phase 3 Diffusion (Figure 5a), at a moderate viewpoint shift (~50°), coverage is about 35% – meaning the model manages to render roughly one-third of the true surfaces in that novel view. However, as the novel view angle grows (turning the camera to see the backside of the scene ~150° or more), coverage plummets to 0%.</p>
+            
+            <p>In contrast, for Phase 3 Consistency (Figure 5b), the coverage at 50° is a bit lower (~28%). This slight drop is because the consistency method is conservative – it avoids counting surfaces unless they are well-supported by memory. However, the depth MAE for those that are rendered is lower (around 14.2 m at 50°), suggesting that Phase 3 Consistency's outputs, though covering slightly less area, are more geometrically accurate.</p>
+
+            <h3>Hallucinated RGB Quality</h3>
+            <figure>
+              <img src="images/quality_results.png" alt="Quality Metrics" style="max-width: 80%; max-height: 350px;">
+              <figcaption>
+                Figure 6: PSNR & SSIM vs. held-out angle. High fidelity near seen views (30°, 120°) but plummets elsewhere (60°, 150°).
+              </figcaption>
+            </figure>
+            <p>
+              Average PSNR≈8.9 dB and SSIM≈0.43 reflect reasonable local texture plausibility but poor global consistency. Failures at 60°/150° align with zero coverage—no geometry to paint on.
+            </p>
+          </section>
+
+          <!-- CONCLUSION -->
+          <section id="conclusion">
+            <h2>Conclusion &amp; Discussion</h2>
+            
+            <p><strong>Strengths of Memory-Augmentation:</strong> Our experiments demonstrate that integrating a persistent memory structure with a diffusion model can dramatically improve multi-view consistency in generated scenes. By Phase 3, the system maintains a coherent world model that stays largely stable as the camera moves, a notable achievement considering the inherent tendency of 2D diffusion models to hallucinate without regard for previous frames. The voxel memory serves as a scaffold that anchors the diffusion generation: once an element of the scene is established, it remains in place and is reused for subsequent renders. This addresses the "forgetting" problem we identified in the Phase 1 baseline.</p>
+            
+            <p><strong>Limitations and Failure Modes:</strong> Despite these gains, the approach has clear limitations. The most prominent is the handling of surfaces that were never observed. Our results show that when confronted with a completely novel viewpoint (e.g., the backside of an object that was always occluded), even the memory-augmented diffusion struggles. In Phase 3 Diffusion, the model made a best-effort guess, but often it either left the region blank (leading to 0% coverage) or filled it with incorrect geometry that did not match the ground truth. Phase 3 Consistency chose to leave such regions empty rather than introduce inconsistent hallucinations, which is safer but means the model fails to invent any plausible content there.</p>
+            
+            <p><strong>Voxel Resolution and Memory Structure Impact:</strong> The choice of memory representation significantly affects outcomes. We used a dense voxel grid with a fixed resolution; this discretization means that fine details smaller than a voxel can't be perfectly preserved, sometimes causing the diffusion model to "freestyle" those details in ways that differ between views. If the voxel size is coarse, the memory only captures a rough outline of the scene, and while it still enforces large-scale consistency, small textures or thin structures may not align across views.</p>
+            
+            <p><strong>Hallucination Quality vs. Geometric Consistency:</strong> One of the key insights from our project is the inherent trade-off between visual fidelity and strict consistency. In Phase 3 Diffusion, we allowed the model more freedom to hallucinate unseen parts, resulting in richer detail and imaginative guesses – the <em>hallucination quality</em> was high, and from a single-view perspective these hallucinated parts often looked convincing. However, without reinforcement from memory, these details didn't always line up from different angles (they lacked geometric consistency). When we enforced consistency in Phase 3 Consistency, the model sacrificed some of that detail in order to make the scene physically plausible.</p>
+            
+            <p><strong>Related Work and Context:</strong> Our approach touches on several areas of active research. In the domain of 3D-aware image synthesis, projects like GIRAFFE have demonstrated the ability to generate multi-view consistent images from a learned 3D latent space, and Neural Radiance Fields (NeRF) represent scenes with perfect consistency by optimizing on image observations. Compared to these, our method does not require training from scratch on each new scene (we use a pretrained diffusion prior, making our method more generalizable out-of-the-box) but we also do not achieve the same level of precise geometry as NeRF.</p>
+            
+            <p>In conclusion, our project showed a viable path toward combining the creativity of generative diffusion models with the consistency of explicit 3D scene memories. We achieved notable improvements in keeping a Minecraft-style world persistent across camera movements, though complete and error-free scene reconstruction remains elusive when parts of the world are never observed. The balance between hallucination and consistency is a core challenge; our memory-augmented approach takes a step in the right direction by introducing structure and history into the generative process. Future work can build on this foundation, potentially incorporating more sophisticated memory representations, training objectives for multi-view consistency, and leveraging insights from related 3D generative work to further enhance the realism and coherence of generated worlds.</p>
+          </section>
+
+          <!-- REFERENCES -->
+          <section id="references">
+            <h2>References</h2>
+            <div class="references">
+              <ol>
+                <li>Mildenhall, B., Srinivasan, P. P., Tancik, M., Barron, J. T., Ramamoorthi, R., &amp; Ng, R. (2020). <em>NeRF: Representing Scenes as Neural Radiance Fields for View Synthesis.</em> In <strong>ECCV 2020</strong>. (<a href="https://arxiv.org/abs/2003.08934">arXiv:2003.08934</a>)</li>
+                <li>Newcombe, R. A., Izadi, S., Hilliges, O., Molyneaux, D., Kim, D., Davison, A. J., ... &amp; Fitzgibbon, A. (2011). <em>KinectFusion: Real-Time Dense Surface Mapping and Tracking with Kinect.</em> In <strong>ISMAR 2011</strong>. (<a href="https://doi.org/10.1109/ISMAR.2011.6092378">doi:10.1109/ISMAR.2011.6092378</a>)</li>
+                <li>Zhang, L., Rao, A., &amp; Agrawala, M. (2023). <em>Adding Conditional Control to Text-to-Image Diffusion Models.</em> <strong>arXiv preprint</strong> arXiv:2302.05543. (<a href="https://arxiv.org/abs/2302.05543">link</a>)</li>
+                <li>Fan, L., Liu, X., Li, Y., Xu, M., Wang, Y., Shen, Y., ... &amp; Song, D. (2022). <em>MineDojo: Building Open-Ended Embodied Agents with Internet-Scale Knowledge.</em> In <strong>NeurIPS 2022</strong>. (<a href="https://arxiv.org/abs/2206.08853">arXiv:2206.08853</a>)</li>
+                <li>Liu, R., Wu, R., Van Hoorick, B., Tokmakov, P., Zakharov, S., &amp; Vondrick, C. (2023). <em>Zero-1-to-3: Zero-shot One Image to 3D Object.</em> To appear in <strong>ICCV 2023</strong>. (<a href="https://arxiv.org/abs/2303.11328">arXiv:2303.11328</a>)</li>
+                <li>Poole, B., Jain, A., Barron, J. T., &amp; Mildenhall, B. (2022). <em>DreamFusion: Text-to-3D Using 2D Diffusion.</em> <strong>arXiv preprint</strong> arXiv:2209.14988.</li>
+                <li>Niemeyer, M., &amp; Geiger, A. (2021). <em>GIRAFFE: Representing Scenes as Compositional Generative Neural Feature Fields.</em> In <strong>CVPR 2021</strong>. (<a href="https://arxiv.org/abs/2011.12100">arXiv:2011.12100</a>)</li>
+                <li>Sajjadi, M. S. M., Meyer, H., Pot, E., Bergmann, U., Greff, K., Radwan, N., ... &amp; Tagliasacchi, A. (2022). <em>Scene Representation Transformer: Geometry-Free Novel View Synthesis Through Set-Latent Scene Representations.</em> In <strong>CVPR 2022</strong>. (<a href="https://arxiv.org/abs/2111.13152">arXiv:2111.13152</a>)</li>
+              </ol>
+            </div>
+          </section>
+        </div>
       </div>
     </div>
-    <div class="margin-right-block"></div>
-  </section>
-
+  </div>
 </body>
-</html>
+            <p>This failure mode is evident in the rendered video as well. The clip above (Video 1) shows a short camera pan with the Phase 1 baseline. As the view changes and returns, objects do not remain consistent – some blocks appear, disappear, or change color/shape. Notably, when the camera looks behind initial structures, the model does not render the back faces at all (they often appear as black
