@@ -82,7 +82,6 @@ def copy_png_image(src_path: str, new_name: str) -> None:
     print(f"Copied '{src_path}' to '{dest_path}'")
 
 if __name__ == "__main__":
-    for idx in range(182, 200):
-        original_file = f"data/generated/scene9/frame_{idx-1:04d}.png"
-        new_filename = f"frame_{idx:04d}.png"
-        copy_png_image(original_file, new_filename)
+    for i in range(1, 10):
+        frames_dir = f"data/generated/scene{i}"
+        frames_to_video(frames_dir, frames_dir, 20, "frame*.png")
