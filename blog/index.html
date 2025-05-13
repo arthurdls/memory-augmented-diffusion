@@ -371,11 +371,53 @@
           <section id="introduction">
             <h2>Introduction</h2>
             <p>
-              We present a pipeline that fuses sparse RGB-D captures into a persistent voxel grid, uses depth-conditioned diffusion to hallucinate textures in unobserved regions, and then enforces multi-view consistency—ultimately generating stylized, Minecraft-like 3D scenes from only a handful of real images.
+              Generative diffusion models can produce rich and visually compelling scenes,
+              but they often lack <em>structural memory</em>: when the viewpoint shifts,
+              previously generated content may be forgotten or reimagined, leading to
+              inconsistencies. This limitation is especially problematic in 3D settings,
+              where maintaining coherent geometry across frames is crucial for realism.
+              Our project explores how to anchor diffusion models to an explicit scene
+              representation so that worlds remain consistent as the camera moves.
             </p>
-            <p> We chose Minecraft-style block worlds as our primary testbed due to both computational and practical considerations. Unlike complex photorealistic scenes, which require high-resolution textures, detailed geometry, and substantial GPU memory to process, Minecraft-like environments can be represented with simple, axis-aligned voxel primitives and rendered efficiently on limited hardware. Our experiments were conducted on laptops, which constrained our ability to run large-scale 3D scene synthesis or NeRF-style optimization. In contrast, block-based worlds are trivially composable, easy to simulate procedurally, and well-aligned with the assumptions of voxel-grid fusion. They strike a useful middle ground: visually structured enough to test multi-view consistency and geometry-aware hallucination, yet lightweight enough to support end-to-end diffusion with memory integration at interactive speeds. </p>
+          
             <p>
-              We explore how persistent 3D scene memory can be integrated with a diffusion model to maintain world consistency in a Minecraft-style environment. Our approach combines a Stable Diffusion model (augmented via ControlNet for structure guidance) with an explicit voxel-based memory that is updated as the virtual camera moves. The goal is to prevent the model from "forgetting" previously seen content and to hallucinate plausible unseen regions in a geometrically consistent way. We implemented the system in phases: a baseline diffusion without memory (Phase 1), an integrated memory with partial updates (Phase 2), and a full memory-augmented diffusion with an additional consistency enforcement step (Phase 3). Below we present our findings, including quantitative metrics and qualitative results, and discuss strengths, limitations, and connections to prior work.
+              To investigate this challenge, we implemented and evaluated
+              <strong>two complementary pipelines</strong> for generating Minecraft-style
+              voxel scenes:
+              <ul>
+                <li><strong>Method 1</strong> begins with a small number of
+                    sparse RGB-D observations and incrementally hallucinated outward using
+                    a memory-augmented diffusion model. The system enforces consistency
+                    across canonical and held-out views by aligning output with an
+                    accumulated mesh.</li>
+                <li><strong>Method 2</strong> procedurally generates full
+                    synthetic voxel scenes and captures them from 100 orbiting viewpoints.
+                    These RGB-D frames are fused into a TSDF volume (a voxel grid) that then guides
+                    diffusion during image generation. Comparisons are made against
+                    baseline “control” runs with no memory guidance.</li>
+              </ul>
+              While both methods share the same core diffusion backbone and voxel-centric
+              priors, they differ in how memory is introduced (sparse → complete) and
+              when consistency is enforced (post hoc in Method 1, real-time in Method 2).
+            </p>
+          
+            <p>
+              We chose Minecraft-style scenes for their ease of generation, visual
+              regularity, and computational efficiency. Unlike complex real-world 3D
+              environments—which require high-resolution assets, accurate lighting, and
+              powerful GPUs—Minecraft scenes can be rendered as lightweight block meshes
+              with simple color cues. This makes them ideal for rapid prototyping on
+              limited hardware (e.g., a Laptop CPU/GPU) while still capturing key
+              challenges of scene memory, multi-view consistency, and depth-aware
+              generation.
+            </p>
+          
+            <p>
+              Below, we present the architectural details and results of both methods,
+              including quantitative metrics and qualitative walkthroughs. We highlight
+              the unique strengths of each pipeline, compare their behavior under similar
+              prompts and poses, and discuss trade-offs between hallucination quality,
+              geometric fidelity, and temporal coherence.
             </p>
           </section>
 
