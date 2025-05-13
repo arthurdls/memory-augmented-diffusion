@@ -1,5 +1,5 @@
 frames=200
-seed100
+seed=100
 prompt="minecraft voxel world scene"
 steps=30
 strength=0.5
