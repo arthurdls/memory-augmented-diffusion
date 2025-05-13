@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Memory-Augmented Diffusion for Minecraft-Style Worlds</title>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+  <!-- Consider removing jQuery if not used to improve load performance -->
+  <link rel="shortcut icon" href="images/icon.ico">
+  <style type="text/css">
+    :root {
+      --main-title-size: 36px;
+      --section-title-size: 24px;
+      --subsection-title-size: 20px;
+      --primary-color: #26C6DA;
+      --primary-hover: #00ACC1;
+      --bg-color: #121212;
+      --content-bg: #1E1E1E;
+      --border-color: #333;
+      --text-color: #E0E0E0;
+      --caption-color: #BBB;
+      --sidebar-width: 220px;
+    }
+    
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+    }
+    
+    .page-layout {
+      display: flex;
+      min-height: 100vh;
+    }
+    
+    .sidebar {
+      width: var(--sidebar-width);
+      background-color: #1A1A1A;
+      position: fixed;
+      height: 100vh;
+      overflow-y: auto;
+      padding: 30px 20px;
+      box-shadow: 2px 0 10px rgba(0,0,0,0.3);
+      z-index: 100;
+    }
+    
+    .sidebar-title {
+      color: var(--primary-color);
+      font-size: 18px;
+      font-weight: bold;
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border-color);
+    }
+    
+    .sidebar ul {
+      list-style-type: none;
+      padding: 0;
+      margin: 0;
+    }
+    
+    .sidebar li {
+      margin-bottom: 12px;
+    }
+    
+    .sidebar a {
+      color: var(--text-color);
+      text-decoration: none;
+      display: block;
+      padding: 8px 10px;
+      border-radius: 4px;
+      transition: all 0.2s ease;
+    }
+    
+    .sidebar a:hover {
+      background-color: rgba(38, 198, 218, 0.1);
+      color: var(--primary-color);
+      transform: translateX(5px);
+    }
+    
+    .main-content {
+      flex: 1;
+      margin-left: var(--sidebar-width);
+      padding: 40px;
+    }
+    
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+    
+    .content {
+      background: var(--content-bg);
+      border-radius: 8px;
+      padding: 40px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+    }
+    
+    p { 
+      line-height: 1.7;
+      margin-bottom: 20px;
+    }
+    
+    img, video { 
+      max-width: 100%;
+      display: block;
+      margin: 0 auto;
+      border-radius: 6px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    
+    a { 
+      color: var(--primary-color);
+      text-decoration: none;
+      transition: color 0.2s ease;
+    }
+    
+    a:hover { 
+      color: var(--primary-hover);
+    }
+    
+    .main-title { 
+      font-size: var(--main-title-size);
+      margin: 0 0 16px 0;
+      color: var(--primary-color);
+      font-family: 'Courier New', Courier, monospace;
+      letter-spacing: -0.5px;
+      border-bottom: 2px solid var(--primary-color);
+      padding-bottom: 10px;
+      display: inline-block;
+    }
+    
+    h2 {
+      font-size: var(--section-title-size);
+      margin-top: 40px;
+      margin-bottom: 20px;
+      color: var(--primary-color);
+      border-left: 4px solid var(--primary-color);
+      padding-left: 12px;
+    }
+    
+    h3 {
+      font-size: var(--subsection-title-size);
+      margin-top: 30px;
+      margin-bottom: 15px;
+      color: var(--primary-color);
+    }
+    
+    figure { 
+      margin: 30px 0;
+      text-align: center;
+    }
+    
+    figcaption {
+      font-size: 0.9em;
+      color: var(--caption-color);
+      margin-top: 10px;
+      font-style: italic;
+    }
+    
+    hr { 
+      height: 1px;
+      border: none;
+      background-color: var(--border-color);
+      margin: 40px 0;
+    }
+    
+    .citation { 
+      font-size: 0.9em;
+      background-color: #252525;
+      padding: 15px;
+      border-radius: 6px;
+      border-left: 3px solid var(--primary-color);
+      margin-top: 30px;
+    }
+    
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 25px 0;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      overflow: hidden;
+      border-radius: 6px;
+    }
+    
+    th, td {
+      border: 1px solid var(--border-color);
+      padding: 12px;
+      text-align: center;
+    }
+    
+    th { 
+      background: #2A2A2A;
+      color: var(--primary-color);
+      font-weight: bold;
+    }
+    
+    tr:hover {
+      background-color: rgba(38, 198, 218, 0.05);
+    }
+    
+    .image-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 15px;
+      margin: 30px 0;
+    }
+    
+    .image-row img {
+      flex: 1;
+      object-fit: cover;
+      max-height: 250px;
+      width: auto;
+    }
+    
+    .video-container {
+      margin: 30px 0;
+    }
+    
+    .video-container video {
+      width: 100%;
+      max-height: 400px;
+    }
+    
+    .author-info {
+      display: flex;
+      align-items: center;
+      margin-bottom: 30px;
+    }
+    
+    .author-info p {
+      margin: 0 20px 0 0;
+    }
+    
+    @media (max-width: 1024px) {
+      .sidebar {
+        width: 200px;
+      }
+      
+      .main-content {
+        margin-left: 200px;
+      }
+    }
+    
+    @media (max-width: 768px) {
+      .page-layout {
+        flex-direction: column;
+      }
+      
+      .sidebar {
+        width: 100%;
+        height: auto;
+        position: relative;
+        padding: 15px;
+      }
+      
+      .main-content {
+        margin-left: 0;
+        padding: 20px;
+      }
+      
+      .image-row {
+        flex-direction: column;
+      }
+      
+      .image-row img {
+        max-height: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page-layout">
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+      <div class="sidebar-title">Contents</div>
+      <ul>
+        <li><a href="#introduction">Introduction</a></li>
+        <li><a href="#background">Background &amp; Related Work</a></li>
+        <li><a href="#methods">Methods &amp; Experiments</a></li>
+        <li><a href="#results">Results &amp; Analysis</a></li>
+        <li><a href="#conclusion">Conclusion &amp; Discussion</a></li>
+        <li><a href="#references">References</a></li>
+      </ul>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="main-content">
+      <div class="container">
+        <div class="content">
+          <!-- HEADER -->
+          <h1 class="main-title">Memory-Augmented Diffusion for Minecraft-Style Worlds</h1>
+          <div class="author-info">
+            <p><strong>Co-Authors:</strong> Arthur De Los Santos, Joachim Asare</p>
+            <p><strong>Course:</strong> 6.8300 Computer Vision, Spring 2025</p>
+          </div>
+          <hr>
+
+          <!-- INTRO -->
+          <section id="introduction">
+            <h2>Introduction</h2>
+            <p>
+              We present a pipeline that fuses sparse RGB-D captures into a persistent voxel grid, uses depth-conditioned diffusion to hallucinate textures in unobserved regions, and then enforces multi-view consistency—ultimately generating stylized, Minecraft-like 3D scenes from only a handful of real images.
+            </p>
+          </section>
+
+          <!-- BACKGROUND -->
+          <section id="background">
+            <h2>Background &amp; Related Work</h2>
+            <p>
+              Neural Radiance Fields (NeRF) achieve high-quality novel-view synthesis [1] but require dense viewpoints. Voxel-based fusion methods (e.g. KinectFusion [2]) efficiently accumulate 3D geometry but lack texture hallucination. ControlNet [3] adds depth conditioning to 2D diffusion; we extend this to a volumetric memory.
+            </p>
+          </section>
+
+          <!-- METHODS -->
+          <section id="methods">
+            <h2>Methods &amp; Experiments</h2>
+
+            <h3>Phase 1: Voxel Memory Initialization</h3>
+            <p>
+              Eight ground‐truth RGB‐D captures of a 16³ random block world are fused into a 256³ voxel grid (voxel size 0.125 m). We back-project each pixel to update occupancy and color.
+            </p>
+            <div class="image-row">
+              <img src="images/phase1_depth.png" alt="GT Depth Map">
+              <img src="images/phase1_depth_hint.png" alt="Voxel Depth Hint">
+              <img src="images/phase1_rgb.png" alt="Fused RGB">
+            </div>
+            <figcaption>
+              Figure 1: (Left) ground-truth depth, (center) first-pass depth hints from voxel memory, (right) fused RGB silhouette after eight views.
+            </figcaption>
+
+            <h3>Phase 2: Mesh Extraction</h3>
+            <p>
+              We threshold occupancy (count > 0) and run Marching Cubes to extract a colored triangle mesh of ~78k vertices.
+            </p>
+            <figure>
+              <img src="images/phase2_mesh.png" alt="Phase 2 Mesh" style="max-height: 400px;">
+              <figcaption>
+                Figure 2: Raw mesh after Phase 2 Marching Cubes.
+              </figcaption>
+            </figure>
+
+            <h3>Phase 3: Diffusion & Consistency</h3>
+            <p>
+              For each of the four canonical views, we ray-march to obtain depth hints, feed them into ControlNet (Stable Diffusion) with a "Minecraft-style voxel art" prompt, fuse the hallucinated RGB-D, and extract a mesh (Phase 3 Diffusion). We then re-render held-out angles, hallucinate, and re-fuse to enforce multi-view consistency (Phase 3 Consistency).
+            </p>
+            <figure>
+              <img src="images/phase3_diffusion_mesh.png" alt="Phase 3 Diffusion Mesh" style="max-height: 400px;">
+              <figcaption>
+                Figure 3: Mesh after diffusion-based texture hallucination (Phase 3 Diffusion). Notice increased coverage but visible shape artifacts (gaps and spikes).
+              </figcaption>
+            </figure>
+
+            <h3>Interactive Walkthroughs</h3>
+            <div class="video-container">
+              <video src="images/phase1.mp4" controls></video>
+              <figcaption>Video 1: Phase 1 fusion.</figcaption>
+            </div>
+            <div class="video-container">
+              <video src="images/Phase2.mp4" controls></video>
+              <figcaption>Video 2: Phase 2 mesh extraction.</figcaption>
+            </div>
+            <div class="video-container">
+              <video src="images/phase3_diffusion.mp4" controls></video>
+              <figcaption>Video 3: Phase 3 diffusion fusion.</figcaption>
+            </div>
+            <div class="video-container">
+              <video src="images/phase3_consistency.mp4" controls></video>
+              <figcaption>Video 4: Phase 3 multi-view consistency.</figcaption>
+            </div>
+          </section>
+
+          <!-- RESULTS -->
+          <section id="results">
+            <h2>Results &amp; Analysis</h2>
+
+            <h3>Phase 1 Coverage & Depth Error</h3>
+            <table>
+              <tr><th>View</th><th>Coverage (%)</th></tr>
+              <tr><td>1</td><td>10.00</td></tr>
+              <tr><td>2</td><td>21.07</td></tr>
+              <tr><td>3</td><td>31.52</td></tr>
+              <tr><td>4</td><td>43.81</td></tr>
+              <tr><td>5</td><td>54.47</td></tr>
+              <tr><td>6</td><td>67.29</td></tr>
+              <tr><td>7</td><td>78.29</td></tr>
+              <tr><td>8</td><td>91.18</td></tr>
+            </table>
+            <p>
+              Coverage increases nearly linearly as more viewpoints are fused, reaching 91 % by view 8. However, only ~32 % of pixels have valid depth hints (mean absolute error 12.61 m, max 29.31 m), indicating imprecise geometry for distant blocks.
+            </p>
+            <figure>
+              <img src="images/phase1_error.png" alt="Phase 1 Error Heatmap">
+              <figcaption>
+                Figure 4: Absolute depth error where hints exist. High errors (orange) occur at farthest surfaces.
+              </figcaption>
+            </figure>
+
+            <h3>Phase 3 Diffusion Evaluation</h3>
+            <figure>
+              <img src="images/eval_phase3_diffusion.png" alt="Phase 3 Diffusion Eval">
+              <figcaption>
+                Figure 5: Coverage (green) and MAE (blue) for held-out angles after diffusion fusion. Only 34.5 % coverage at 45°, then drops to zero—diffusion struggles to hallucinate unseen geometry reliably.
+              </figcaption>
+            </figure>
+            <p>
+              Although generated-textures boost coverage at trained views (up to 126 %), novel-view coverage collapses: beyond the canonical four, zero voxels are re-covered, showing the 2D diffusion alone cannot invent new shape.
+            </p>
+
+            <h3>Phase 3 Consistency Evaluation</h3>
+            <figure>
+              <img src="images/eval_phase3_consistency.png" alt="Phase 3 Consistency Eval">
+              <figcaption>
+                Figure 6: Post-consistency coverage & MAE. Coverage at novel views peaks at 27.5 % (45°) but zero again at other angles. MAE ~14.3 m—slightly worse than diffusion-only.
+              </figcaption>
+            </figure>
+            <p>
+              Multi-view consistency recovers a small fraction of geometry (27.5 % at best) but fails at angles not near any training view, and introduces additional depth error.
+            </p>
+
+            <h3>Hallucinated RGB Quality</h3>
+            <figure>
+              <img src="images/quality_results.png" alt="Quality Metrics">
+              <figcaption>
+                Figure 7: PSNR & SSIM vs. held-out angle. High fidelity near seen views (30°, 120°) but plummets elsewhere (60°, 150°).
+              </figcaption>
+            </figure>
+            <p>
+              Average PSNR≈8.9 dB and SSIM≈0.43 reflect reasonable local texture plausibility but poor global consistency. Failures at 60°/150° align with zero coverage—no geometry to paint on.
+            </p>
+          </section>
+
+          <!-- CONCLUSION -->
+          <section id="conclusion">
+            <h2>Conclusion &amp; Discussion</h2>
+            <p>
+              Our memory-augmented diffusion pipeline successfully fuses limited real data and 2D diffusion to densely texture observed geometry, producing stylized Minecraft worlds. However, it fails to hallucinate novel geometry beyond training views. Future steps include integrating a NeRF-based baseline comparison, stronger volumetric priors (e.g. learned shape codes), and explicit 3D diffusion models to improve unseen-view coverage.
+            </p>
+          </section>
+
+          <!-- REFERENCES -->
+          <section id="references">
+            <h2>References</h2>
+            <div class="citation">
+              [1] Mildenhall, B. et al., NeRF: Representing Scenes as Neural Radiance Fields for View Synthesis, ECCV 2020.<br>
+              [2] Newcombe, R. A. et al., KinectFusion: Real-Time Dense Surface Mapping and Tracking, ISMAR 2011.<br>
+              [3] Lv, Z. et al., ControlNet: Adding Conditional Control to Text-to-Image Diffusion Models, arXiv 2023.
+            </div>
+          </section>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
