@@ -1,0 +1,9 @@
+frames=200
+seed100
+prompt="minecraft voxel world scene"
+steps=30
+strength=0.5
+guidance=3
+seed_val=42
+voxel=0.10
+trunc=0.30
