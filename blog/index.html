@@ -531,8 +531,8 @@
           <!-- RESULTS -->
           <section id="results">
             <h2>Results &amp; Analysis</h2>
-
-            <h3>Phase 1 Coverage & Depth Error</h3>
+            <h3>Results: Method 1</h3>
+            <h4>Phase 1 Coverage & Depth Error</h4>
             <p><strong>Phase 1 – Baseline Diffusion (No Memory):</strong> In the first phase, the diffusion model was run with basic conditioning (an initial depth hint) but without any persistent memory of the scene. We found that while the model can produce photorealistic frames from a single viewpoint, it struggles with consistency across views. As the camera moves, the diffusion model often <em>hallucinates</em> new structures or forgets previously seen ones. For example, when the camera rotates to reveal unseen areas, the model has no knowledge of those regions and fails to generate coherent content there. We provided the model with a depth hint from the initial view via ControlNet, but once the viewpoint changed, this hint became misaligned with the true scene geometry. The <em>Depth Hint Absolute Error</em> heatmap in Figure 4 illustrates this issue: areas in bright colors indicate large discrepancies (up to ~25 meters) between the provided depth hint and the ground-truth depth after the camera moved. These large errors confirm that a single-view hint is insufficient for novel view synthesis – the diffusion model was essentially guessing content for regions outside the initial view, leading to inconsistency.</p>
             
             <table>
@@ -560,22 +560,22 @@
             
             <p>This failure mode is evident in the rendered video as well. The clip above (Video 1) shows a short camera pan with the Phase 1 baseline. As the view changes and returns, objects do not remain consistent – some blocks appear, disappear, or change color/shape. Notably, when the camera looks behind initial structures, the model does not render the back faces at all (they often appear as black or random textures), demonstrating <strong>zero novel-view coverage</strong> for surfaces that were never observed. By the time the camera returns to the original angle, the scene has drifted: the final view deviates from the starting view, highlighting poor temporal consistency.</p>
 
-            <h3>Phase 2 – Integrating Spatial Memory</h3>
+            <h4>Phase 2 – Integrating Spatial Memory</h4>
             <p><strong>Phase 2 – Integrating Spatial Memory (Partial Reconstruction):</strong> In Phase 2, we introduced a structured voxel grid as a persistent scene memory, akin to the approach of KinectFusion, to integrate depth observations over time. As the camera moved, depth from each new view was fused into this voxel representation (using truncated signed distance functions for surface mapping, similar to KinectFusion). This allowed the system to accumulate a partial 3D model of the scene in memory. The diffusion model could then be conditioned not just on the current view's hint, but also on the memory-derived depth for known regions. The impact was immediately visible: previously seen surfaces stayed much more consistent in appearance and position, since the model was now guided by the stored geometry.</p>
             
             <p>Figure 2 shows the extracted mesh from the voxel memory after a limited camera sweep in Phase 2. Only surfaces that the camera has observed are present; they appear as isolated black fragments corresponding to the front faces of the Minecraft-style blocks. This partial reconstruction demonstrates one strength of Phase 2: the memory successfully preserves seen content. However, the limitations are also clear – large portions of the scene remain missing (e.g., the hidden faces and any areas never viewed). In other words, Phase 2's memory is accurate but incomplete. The system does not yet attempt to generate new geometry for unseen regions; it simply leaves them blank.</p>
 
-            <h3>Phase 3 – Memory-Augmented Diffusion</h3>
+            <h4>Phase 3 – Memory-Augmented Diffusion</h4>
             <p><strong>Phase 3 – Memory-Augmented Diffusion (Hallucination of Unseen Regions):</strong> In Phase 3, we leveraged the accumulated memory to actively guide the diffusion model in filling out the scene, including regions not directly observed. Here we introduced two variants: <em>Phase 3 Diffusion</em> and <em>Phase 3 Consistency</em>. In the Phase 3 Diffusion stage, the model was conditioned on both the current view's known depth and the global memory structure. Crucially, if the memory indicated empty or unknown space (for example, the back of a block that hadn't been seen), the diffusion model was encouraged to hallucinate plausible content to occupy that space.</p>
             
             <p>Figure 3 depicts the mesh after Phase 3 Diffusion. We see a much denser, more complete set of surfaces (rendered in gray) compared to Phase 2's sparse black fragments. The model has hallucinated the backs and even some unseen internal parts of the scene, guided by the memory's structure. This dramatically increased the <strong>coverage</strong> of the scene: the fraction of ground-truth surfaces that have a corresponding generated surface went up substantially. However, these hallucinated surfaces are not guaranteed to be geometrically accurate – they are the model's best guess.</p>
 
-            <h3>Phase 3 – Enforcing Multi-View Consistency</h3>
+            <h4>Phase 3 – Enforcing Multi-View Consistency</h4>
             <p><strong>Phase 3 – Enforcing Multi-View Consistency:</strong> After obtaining the hallucinated full scene from Phase 3 Diffusion, we applied an additional consistency refinement step (Phase 3 Consistency). The goal here was to ensure that the hallucinated content remains self-consistent when viewed from multiple angles, improving geometric fidelity. We achieved this by using the accumulated voxel memory as a constraint: any new view rendered must align with the memory's surfaces. This process is conceptually similar to approaches like DreamFusion or Scene Representation Transformer, which aim for a consistent underlying scene representation that can render from any angle.</p>
             
             <p>This consistency enforcement did have a side effect: it sometimes reduced the visual detail on those surfaces because the diffusion model had less freedom to alter them. The images became slightly more blurred or simple on consistent surfaces, as the model essentially had to obey the memory. Thus, we observe a classic quality vs. consistency trade-off: Phase 3 Diffusion produced the most visually detailed hallucinations, whereas Phase 3 Consistency prioritized ensuring those features didn't contradict across views.</p>
 
-            <h3>Quantitative Evaluation</h3>
+            <h4>Quantitative Evaluation</h4>
             <p><strong>Quantitative Evaluation:</strong> We evaluated our approach using several metrics. First, we measured <em>coverage</em>, defined as the percentage of ground-truth surface area that our generated outputs successfully reconstruct or cover in novel views. Second, we computed the <em>mean absolute error (MAE)</em> in depth for the generated surfaces, comparing the model's output depth to the ground-truth depth map at corresponding pixels. We also tracked image-based metrics (PSNR and SSIM) for frames where ground-truth images were available.</p>
             
             <div class="image-comparison">
@@ -606,6 +606,100 @@
             <p>
               Average PSNR≈8.9 dB and SSIM≈0.43 reflect reasonable local texture plausibility but poor global consistency. Failures at 60°/150° align with zero coverage—no geometry to paint on.
             </p>
+
+            <!-- ───────────────────────── Arthur – Method 2 Results ───────────────────────── -->
+            <h3 id="results-m2">Results: Method 2</h3>
+
+            <p>
+              The grid below shows the <em>final</em> memory-conditioned videos for all nine
+              scenes.  Qualitatively we observe three trends:
+              (i) increased <strong>strength</strong> (0.25 → 0.75) mixes more prompt colour
+              into the world at the expense of block shape fidelity;
+              (ii) halving the voxel size (Scene 4, 0.06 m) comapred to doubling the voxel size (Scene 5, 0.20 m) leads to less scene 'breaking' as the diffusion model continues to generate;
+              (iii) low guidance (Scene 7, 3.0) preserves the scene structure more compared to high guidance (Scene 6, 15).
+            </p>
+
+            <div class="video-grid">
+              <div class="video-item">
+                <video src="images/arthur/generated/scene1.mp4" autoplay loop muted playsinline></video>
+                <figcaption>Scene&nbsp;1</figcaption>
+              </div>
+              <div class="video-item">
+                <video src="images/arthur/generated/scene2.mp4" autoplay loop muted playsinline></video>
+                <figcaption>Scene&nbsp;2</figcaption>
+              </div>
+              <div class="video-item">
+                <video src="images/arthur/generated/scene3.mp4" autoplay loop muted playsinline></video>
+                <figcaption>Scene&nbsp;3</figcaption>
+              </div>
+              <div class="video-item">
+                <video src="images/arthur/generated/scene4.mp4" autoplay loop muted playsinline></video>
+                <figcaption>Scene&nbsp;4</figcaption>
+              </div>
+              <div class="video-item">
+                <video src="images/arthur/generated/scene5.mp4" autoplay loop muted playsinline></video>
+                <figcaption>Scene&nbsp;5</figcaption>
+              </div>
+              <div class="video-item">
+                <video src="images/arthur/generated/scene6.mp4" autoplay loop muted playsinline></video>
+                <figcaption>Scene&nbsp;6</figcaption>
+              </div>
+              <div class="video-item">
+                <video src="images/arthur/generated/scene7.mp4" autoplay loop muted playsinline></video>
+                <figcaption>Scene&nbsp;7</figcaption>
+              </div>
+              <div class="video-item">
+                <video src="images/arthur/generated/scene8.mp4" autoplay loop muted playsinline></video>
+                <figcaption>Scene&nbsp;8</figcaption>
+              </div>
+              <div class="video-item">
+                <video src="images/arthur/generated/scene9.mp4" autoplay loop muted playsinline></video>
+                <figcaption>Scene&nbsp;9</figcaption>
+              </div>
+            </div>
+
+            <p>
+              In every case, the conditioned output is <em>visually closer</em> to the raw
+              orbit than its control counterpart. However, when <code>strength&nbsp;&gt;&nbsp;0.75</code> the model tends
+              to frequently erase and replace small foliage blocks, hinting at a trade-off between stylistic
+              freedom and geometric recall similar to the Phase 3 Diffusion vs. Consistency contrast in Method 1.
+            </p>
+            
+            <div class="video-grid">
+              <div class="video-item">
+                <video src="images/arthur/control/scene1.mp4" autoplay loop muted playsinline></video>
+                <figcaption>Scene&nbsp;1</figcaption>
+              </div>
+              <div class="video-item">
+                <video src="images/arthur/control/scene2.mp4" autoplay loop muted playsinline></video>
+                <figcaption>Scene&nbsp;2</figcaption>
+              </div>
+              <div class="video-item">
+                <video src="images/arthur/control/scene3.mp4" autoplay loop muted playsinline></video>
+                <figcaption>Scene&nbsp;3</figcaption>
+              </div>
+              <div class="video-item">
+                <video src="images/arthur/control/scene6.mp4" autoplay loop muted playsinline></video>
+                <figcaption>Scene&nbsp;6</figcaption>
+              </div>
+              <div class="video-item">
+                <video src="images/arthur/control/scene7.mp4" autoplay loop muted playsinline></video>
+                <figcaption>Scene&nbsp;7</figcaption>
+              </div>
+              <div class="video-item">
+                <video src="images/arthur/control/scene8.mp4" autoplay loop muted playsinline></video>
+                <figcaption>Scene&nbsp;8</figcaption>
+              </div>
+              <div class="video-item">
+                <video src="images/arthur/control/scene9.mp4" autoplay loop muted playsinline></video>
+                <figcaption>Scene&nbsp;9</figcaption>
+              </div>
+            </div>
+            
+            <p>Note that scene 4 and 5 are excluded given that they change the voxel grid size, which is not part of the control.</p>
+
+            <hr>
+
           </section>
 
           <!-- CONCLUSION -->
