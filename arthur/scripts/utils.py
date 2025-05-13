@@ -3,6 +3,7 @@ import os
 import glob
 import cv2               # pip install opencv-python
 import sys
+import shutil
 from PIL import Image
 sys.path.append(os.getcwd())
 import numpy as np
@@ -68,7 +69,20 @@ def h5_to_frames():
             rgb_img.save(os.path.join(f"data/raw/{scene}", f"frame_{idx:04d}.png"))
 
 
+def copy_png_image(src_path: str, new_name: str) -> None:
+    if not src_path.lower().endswith('.png'):
+        raise ValueError("Source file must be a .png image")
+    if not new_name.lower().endswith('.png'):
+        raise ValueError("New filename must end with .png")
+
+    directory = os.path.dirname(os.path.abspath(src_path))
+    dest_path = os.path.join(directory, new_name)
+
+    shutil.copy2(src_path, dest_path)
+    print(f"Copied '{src_path}' to '{dest_path}'")
+
 if __name__ == "__main__":
-    for i in range(1, 10):
-        frames_dir = f"data/raw/scene{i}"
-        frames_to_video(frames_dir, frames_dir, 20, "frame*.png")
+    for idx in range(182, 200):
+        original_file = f"data/generated/scene9/frame_{idx-1:04d}.png"
+        new_filename = f"frame_{idx:04d}.png"
+        copy_png_image(original_file, new_filename)
