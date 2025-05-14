@@ -569,7 +569,8 @@
             metric depth map <code>D<sub>mem</sub></code> for the next camera pose
             (intrinsic, extrinsic) for the remaining 100 frames of the scene.
             These tensors are then passed to
-            <code>StableDiffusionDepth2Img</code> together with the text prompt.
+            <code>StableDiffusionDepth2Img</code> together with the text prompt. Results from the diffusion
+            model are then re-integrated into the scene using the generated RGB and a monocular depth estimator Depth-Anything-V2. 
             Hyper-parameters (<em>strength, guidance, steps, voxel size, truncation</em>)
             are varied across nine test scenes (Table 1).  A <code>--control</code> flag
             disables RGB-D conditioning, producing a baseline “guess” of what diffusion
