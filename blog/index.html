@@ -424,10 +424,28 @@
           <!-- BACKGROUND -->
           <section id="background">
             <h2>Background &amp; Related Work</h2>
+          
             <p>
-              Neural Radiance Fields (NeRF) achieve high-quality novel-view synthesis but require dense viewpoints. Voxel-based fusion methods (e.g. KinectFusion) efficiently accumulate 3D geometry but lack texture hallucination. ControlNet adds depth conditioning to 2D diffusion; we extend this to a volumetric memory.
+              Generative scene modeling has seen rapid progress through two major paradigms: implicit 3D representations (e.g., NeRF) and 2D generative diffusion models. While NeRF-based methods inherently maintain multi-view consistency by modeling a continuous volumetric function, they require per-scene optimization and struggle to generalize. Conversely, diffusion models offer expressive and general-purpose generation, but lack structural persistence and often hallucinate inconsistent content across views. Our work combines insights from both approaches by conditioning a diffusion model on an explicit memory: a voxel-based representation that persists across frames and enforces geometric structure.
+            </p>
+          
+            <p>
+              <strong>Neural Radiance Fields (NeRF)</strong> represent a scene as a 5D function (position and viewing direction mapped to color and density), achieving photorealistic novel-view synthesis. While NeRF inherently provides scene memory and geometric consistency, it is slow to train, scene-specific, and typically static. Extensions like NeRF-VAE introduce latent variables to generalize across scenes and encode global memory, enabling generation of novel views from sparse input. These models motivate our use of geometry as a persistent backbone but are less suitable for real-time or creative generation tasks without retraining.
+            </p>
+          
+            <p>
+              <strong>3D-aware generative models</strong> like GIRAFFE and π-GAN further highlight the value of compositional structure. GIRAFFE models a scene as a set of independent objects in a 3D feature space, enabling more disentangled and consistent synthesis across viewpoints. These methods demonstrate that enforcing 3D priors—even implicitly—helps stabilize content under transformation. However, they typically operate on synthetic datasets and require training from scratch. Our approach instead leverages pretrained diffusion priors guided by explicit voxel memory to produce similar view-consistent effects without specialized training.
+            </p>
+          
+            <p>
+              <strong>Conditioned diffusion models</strong> offer a middle ground: models like Zero-1-to-3 and ControlNet fine-tune diffusion to accept structural guidance such as depth maps or poses. In particular, ControlNet enables conditioning on arbitrary structural inputs like segmentation masks or monocular depth, making it suitable for applications where scene geometry is available but incomplete. Our project builds on this idea: we use a voxel grid (constructed from past observations or synthetic renderings) to produce depth hints at each frame, which then guide a Stable Diffusion model to generate RGB images consistent with the underlying 3D scene.
+            </p>
+          
+            <p>
+              In summary, our work draws from the strengths of implicit 3D representations and 2D generative models. By maintaining a persistent volumetric memory and conditioning a depth-to-image diffusion model on it, we achieve improved consistency and scene persistence without needing to retrain from scratch. Our approach adapts well to resource-constrained environments and is particularly well-suited to stylized voxel worlds like Minecraft, where structural alignment and geometric recall are crucial for believable world synthesis.
             </p>
           </section>
+
 
           <!-- METHODS -->
           <section id="methods">
