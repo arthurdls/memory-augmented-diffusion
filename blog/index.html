@@ -448,46 +448,31 @@
           <!-- BACKGROUND -->
           <section id="background">
             <h2>Background &amp; Related Work</h2>
-
+          
             <p>
-              Generative scene modeling has seen rapid progress through two paradigms:
-              implicit 3D representations (e.g., NeRF [1]) and 2D generative diffusion
-              models. NeRF‐based methods inherently maintain view consistency but require
-              per‐scene optimization. Diffusion models generalize quickly but lack
-              structural memory, often hallucinating inconsistent content across views.
-              Our work combines geometry and generation by conditioning diffusion on an
-              explicit TSDF‐based memory.
+              Generative scene modeling has seen rapid progress through two major paradigms: implicit 3D representations (e.g., NeRF [1]) and 2D generative diffusion models [2,3]. While NeRF-based methods inherently maintain multi-view consistency by modeling a continuous volumetric function, they require per-scene optimization and struggle to generalize. Conversely, diffusion models offer expressive and general-purpose generation, but lack structural persistence and often hallucinate inconsistent content across views. Our work combines insights from both approaches by conditioning a diffusion model on an explicit memory: a voxel-based representation that persists across frames and enforces geometric structure.
             </p>
-
+          
             <p>
-              <strong>SLAM &amp; Voxel Fusion:</strong>
-              Real‐time TSDF fusion (e.g., KinectFusion [2], ORB‐SLAM [3]) accumulates
-              depth into a voxel grid, providing accurate surface geometry. More recently,
-              3D Gaussian Splatting [4] demonstrated real‐time neural field rendering
-              from point clouds—showing the power of explicit volumetric memory for fast
-              reconstruction. We build on these ideas to fuse both real and hallucinated
-              depth into our scene memory.
+              <strong>Neural Radiance Fields (NeRF)</strong> represent a scene as a 5D function (position and viewing direction mapped to color and density), achieving photorealistic novel-view synthesis [1]. While NeRF inherently provides scene memory and geometric consistency, it is slow to train, scene-specific, and typically static. Extensions like NeRF-VAE [4] introduce latent variables to generalize across scenes and encode global memory, enabling generation of novel views from sparse input. These models motivate our use of geometry as a persistent backbone but are less suitable for real-time or creative generation tasks without retraining.
             </p>
-
+          
             <p>
-              <strong>3D‐Aware Generative Models:</strong>
-              Methods like GIRAFFE [5] and VoxelNeRF [6] enforce compositional 3D structure
-              for multi‐view consistent synthesis. VoxelNeRF in particular uses a learned
-              voxel grid to represent radiance fields, combining the speed of grid-based
-              fusion with the smoothness of implicit functions. Our approach differs by
-              using a pretrained diffusion backbone rather than training per‐scene.
+              <strong>3D-aware generative models</strong> like GIRAFFE [5] and π-GAN [6] further highlight the value of compositional structure. GIRAFFE models a scene as a set of independent objects in a 3D feature space, enabling more disentangled and consistent synthesis across viewpoints. These methods demonstrate that enforcing 3D priors—even implicitly—helps stabilize content under transformation. However, they typically operate on synthetic datasets and require training from scratch. Our approach instead leverages pretrained diffusion priors guided by explicit voxel memory to produce similar view-consistent effects without specialized training.
             </p>
-
+          
             <p>
-              <strong>Conditioned Diffusion:</strong>
-              ControlNet [7] fine‐tunes Stable Diffusion to accept depth or segmentation
-              maps as guidance. Zero-1-to-3 [8] extends this to 3D by generating multi‐view
-              consistent objects from a single image. DreamFusion [9] uses 2D diffusion to
-              sculpt NeRFs, showing how a 2D generative prior can supervise a 3D field.
-              We leverage these insights to guide diffusion with our TSDF memory,
-              balancing hallucination with consistency.
+              <strong>Conditioned diffusion models</strong> offer a middle ground: models like Zero-1-to-3 [7] and ControlNet [8] fine-tune diffusion to accept structural guidance such as depth maps or poses. In particular, ControlNet enables conditioning on arbitrary structural inputs like segmentation masks or monocular depth, making it suitable for applications where scene geometry is available but incomplete. Our project builds on this idea: we use a voxel grid (constructed from past observations or synthetic renderings) to produce depth hints at each frame, which then guide a Stable Diffusion model to generate RGB images consistent with the underlying 3D scene.
             </p>
-          </section
+          
+            <p>
+              Recent work on 3D-aware diffusion includes DreamFusion [9] and Magic3D [10], which optimize 3D assets from text prompts using score distillation sampling. While these approaches produce impressive single objects, they focus on isolated asset creation rather than navigable environments. Our approach differs by maintaining a persistent volumetric memory across multiple views, enabling coherent scene exploration rather than static asset generation.
+            </p>
+          
+            <p>
+              In summary, our work draws from the strengths of implicit 3D representations and 2D generative models. By maintaining a persistent volumetric memory and conditioning a depth-to-image diffusion model on it, we achieve improved consistency and scene persistence without needing to retrain from scratch. Our approach adapts well to resource-constrained environments and is particularly well-suited to stylized voxel worlds like Minecraft, where structural alignment and geometric recall are crucial for believable world synthesis.
+            </p>
+          </section>
 
 
           <!-- METHODS -->
@@ -840,16 +825,16 @@
             <div class="references">
               <ol>
                 <li>Mildenhall, B., Srinivasan, P. P., Tancik, M., Barron, J. T., Ramamoorthi, R., &amp; Ng, R. (2020). <em>NeRF: Representing Scenes as Neural Radiance Fields for View Synthesis.</em> In <strong>ECCV 2020</strong>. (<a href="https://arxiv.org/abs/2003.08934">arXiv:2003.08934</a>)</li>
-                <li>Newcombe, R. A., Izadi, S., Hilliges, O., Molyneaux, D., Kim, D., Davison, A. J., ... &amp; Fitzgibbon, A. (2011). <em>KinectFusion: Real-Time Dense Surface Mapping and Tracking with Kinect.</em> In <strong>ISMAR 2011</strong>. (<a href="https://doi.org/10.1109/ISMAR.2011.6092378">doi:10.1109/ISMAR.2011.6092378</a>)</li>
-                <li>Zhang, L., Rao, A., &amp; Agrawala, M. (2023). <em>Adding Conditional Control to Text-to-Image Diffusion Models.</em> <strong>arXiv preprint</strong> arXiv:2302.05543. (<a href="https://arxiv.org/abs/2302.05543">link</a>)</li>
-                <li>Fan, L., Liu, X., Li, Y., Xu, M., Wang, Y., Shen, Y., ... &amp; Song, D. (2022). <em>MineDojo: Building Open-Ended Embodied Agents with Internet-Scale Knowledge.</em> In <strong>NeurIPS 2022</strong>. (<a href="https://arxiv.org/abs/2206.08853">arXiv:2206.08853</a>)</li>
-                <li>Liu, R., Wu, R., Van Hoorick, B., Tokmakov, P., Zakharov, S., &amp; Vondrick, C. (2023). <em>Zero-1-to-3: Zero-shot One Image to 3D Object.</em> To appear in <strong>ICCV 2023</strong>. (<a href="https://arxiv.org/abs/2303.11328">arXiv:2303.11328</a>)</li>
-                <li>Poole, B., Jain, A., Barron, J. T., &amp; Mildenhall, B. (2022). <em>DreamFusion: Text-to-3D Using 2D Diffusion.</em> <strong>arXiv preprint</strong> arXiv:2209.14988.</li>
-                <li>Niemeyer, M., &amp; Geiger, A. (2021). <em>GIRAFFE: Representing Scenes as Compositional Generative Neural Feature Fields.</em> In <strong>CVPR 2021</strong>. (<a href="https://arxiv.org/abs/2011.12100">arXiv:2011.12100</a>)</li>
-                <li>Sajjadi, M. S. M., Meyer, H., Pot, E., Bergmann, U., Greff, K., Radwan, N., ... &amp; Tagliasacchi, A. (2022). <em>Scene Representation Transformer: Geometry-Free Novel View Synthesis Through Set-Latent Scene Representations.</em> In <strong>CVPR 2022</strong>. (<a href="https://arxiv.org/abs/2111.13152">arXiv:2111.13152</a>)</li>
+                <li>Ho, J., Jain, A., & Abbeel, P. (2020). <em>Denoising Diffusion Probabilistic Models.</em> In <strong>NeurIPS 2020</strong>. (<a href="https://arxiv.org/abs/2006.11239">arXiv:2006.11239</a>)</li>
                 <li>Rombach, R., Blattmann, A., Lorenz, D., Esser, P., &amp; Ommer, B. (2022). <em>High-Resolution Image Synthesis with Latent Diffusion Models.</em> In <strong>CVPR 2022</strong>. (<a href="https://arxiv.org/abs/2112.10752">arXiv:2112.10752</a>)</li>
-                <li>Yang, L., Kang, B., Huang, Z., Xu, X., Feng, J., &amp; Zhao, H. (2024). <em>Depth Anything: Unleashing the Power of Large-Scale Pre-training for Monocular Depth Estimation.</em> In <strong>CVPR 2024</strong>. (<a href="https://arxiv.org/abs/2401.10891">arXiv:2401.10891</a>)</li>
-                <li>Zhou, Q.-Y., Park, J., &amp; Koltun, V. (2018). <em>Open3D: A Modern Library for 3D Data Processing.</em> <strong>arXiv preprint</strong> arXiv:1801.09847. (<a href="https://arxiv.org/abs/1801.09847">link</a>)</li>
+                <li>Kosiorek, A.R., Strathmann, H., Zoran, D., Moreno, P., Schneider, R., Mokrá, S., & Rezende, D.J. (2021). <em>NeRF-VAE: A Geometry Aware 3D Scene Generative Model.</em> In <strong>ICML 2021</strong>. (<a href="https://arxiv.org/abs/2104.00587">arXiv:2104.00587</a>)</li>
+                <li>Niemeyer, M., &amp; Geiger, A. (2021). <em>GIRAFFE: Representing Scenes as Compositional Generative Neural Feature Fields.</em> In <strong>CVPR 2021</strong>. (<a href="https://arxiv.org/abs/2011.12100">arXiv:2011.12100</a>)</li>
+                <li>Chan, E.R., Monteiro, M., Kellnhofer, P., Wu, J., & Wetzstein, G. (2021). <em>pi-GAN: Periodic Implicit Generative Adversarial Networks for 3D-Aware Image Synthesis.</em> In <strong>CVPR 2021</strong>. (<a href="https://arxiv.org/abs/2012.00926">arXiv:2012.00926</a>)</li>
+                <li>Liu, Y., Shu, Z., Bai, Y., Kadambi, A., & Tung, T. (2023). <em>Zero-1-to-3: Zero-shot One Image to 3D Object.</em> In <strong>ICCV 2023</strong>. (<a href="https://arxiv.org/abs/2303.11328">arXiv:2303.11328</a>)</li>
+                <li>Zhang, L., Rao, A., &amp; Agrawala, M. (2023). <em>Adding Conditional Control to Text-to-Image Diffusion Models.</em> <strong>arXiv preprint</strong> arXiv:2302.05543. (<a href="https://arxiv.org/abs/2302.05543">link</a>)</li>
+                <li>Poole, B., Jain, A., Barron, J. T., &amp; Mildenhall, B. (2022). <em>DreamFusion: Text-to-3D Using 2D Diffusion.</em> <strong>arXiv preprint</strong> arXiv:2209.14988.</li>
+                <li>Lin, C.H., Gao, J., Tang, L., Takikawa, T., Zeng, X., Huang, X., Kreis, K., Fidler, S., Liu, M.Y., & Lin, T.Y. (2023). <em>Magic3D: High-Resolution Text-to-3D Content Creation.</em> In <strong>CVPR 2023</strong>. (<a href="https://arxiv.org/abs/2211.10440">arXiv:2211.10440</a>)</li>
+                <li>Newcombe, R. A., Izadi, S., Hilliges, O., Molyneaux, D., Kim, D., Davison, A. J., ... &amp; Fitzgibbon, A. (2011). <em>KinectFusion: Real-Time Dense Surface Mapping and Tracking with Kinect.</em> In <strong>ISMAR 2011</strong>. (<a href="https://doi.org/10.1109/ISMAR.2011.6092378">doi:10.1109/ISMAR.2011.6092378</a>)</li>
               </ol>
             </div>
           </section>
