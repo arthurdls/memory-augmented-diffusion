@@ -8,6 +8,7 @@ from PIL import Image
 sys.path.append(os.getcwd())
 import numpy as np
 
+
 def save_dataset_h5(path, rgbs, depths, poses, intrinsics, extrinsics):
     with h5py.File(path, 'w') as f:
         # chunk along frame axis so you can read one frame at a time
@@ -80,6 +81,7 @@ def copy_png_image(src_path: str, new_name: str) -> None:
 
     shutil.copy2(src_path, dest_path)
     print(f"Copied '{src_path}' to '{dest_path}'")
+
 
 if __name__ == "__main__":
     for i in range(1, 10):

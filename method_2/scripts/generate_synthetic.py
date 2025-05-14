@@ -5,6 +5,7 @@ import cv2
 import os
 from utils import save_dataset_h5
 
+
 def make_scene():
     boxes = []
     for _ in range(5):

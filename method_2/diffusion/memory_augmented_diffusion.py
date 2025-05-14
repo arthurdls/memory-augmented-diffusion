@@ -17,15 +17,14 @@ sys.path.append(os.getcwd())
 from memory.voxel_grid import VoxelGrid, make_intrinsics, render_from_tsdf
 
 """
-memory_augmented_diffusion.py
-
 Generate a temporally consistent RGB sequence for a Minecraft-like scene by
 iteratively conditioning a pretrained Stable Diffusion depth-to-image model
-on the current TSDF voxel-grid depth map plus the previous RGB frame.
+on the current TSDF voxel-grid depth map plus RGB frame.
 
 The generated frames are fused back into the TSDF volume so that scene memory
 persists across views. 
 """
+
 
 def align_scale_shift(rel, target, mask=None, eps=1e-6):
     "OLS depth alignment"
@@ -39,6 +38,7 @@ def align_scale_shift(rel, target, mask=None, eps=1e-6):
     s = cov / (var + eps)
     t = mu_tgt - s * mu_rel
     return (s * rel + t).to(target.dtype).reshape(target.shape)
+
 
 def predict_depth(depth_net, pil_rgb, ref_depth):
     rel = torch.as_tensor(np.asarray(depth_net(pil_rgb)["depth"], dtype=np.float32)).to(ref_depth.device)
@@ -66,7 +66,6 @@ def depth_to_tensor(d: np.ndarray, device="cuda", dtype=torch.float16):
     return tens
 
 
-# ─────────────────────────────  Diffusion Wrapper  ────────────────────────────
 def load_depth2img_pipeline(dtype=torch.float16, device="cuda"):
     pipe = StableDiffusionDepth2ImgPipeline.from_pretrained(
         "stabilityai/stable-diffusion-2-depth", torch_dtype=dtype
@@ -77,7 +76,6 @@ def load_depth2img_pipeline(dtype=torch.float16, device="cuda"):
     return pipe
 
 
-# ───────────────────────────────────  Main  ───────────────────────────────────
 def main(args):
     os.makedirs(args.output, exist_ok=True)
 
@@ -168,7 +166,6 @@ def main(args):
     o3d.visualization.draw_geometries([mesh])
 
 
-# ───────────────────────────────────  CLI  ────────────────────────────────────
 def cli():
     p = argparse.ArgumentParser("Memory-augmented diffusion pipeline")
     p.add_argument("--dataset",  default="data/raw/scene9/dataset.h5")
