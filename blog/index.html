@@ -53,13 +53,24 @@
     }
     
     .sidebar ul {
-      list-style-type: none;
-      padding: 0;
+      padding: 0.01;
       margin: 0;
+    }
+
+    .sidebar ul ul {
+      margin-top: 0px;
+      margin-left: 0px;
+    }
+
+    .sidebar ul ul li {
+      list-style-type: none;
+      margin-bottom: 0px;
+      font-size: 0.9em;
     }
     
     .sidebar li {
-      margin-bottom: 12px;
+      list-style-type: none;
+      margin-bottom: 0px;
     }
     
     .sidebar a {
@@ -348,8 +359,20 @@
       <ul>
         <li><a href="#introduction">Introduction</a></li>
         <li><a href="#background">Background &amp; Related Work</a></li>
-        <li><a href="#methods">Methods &amp; Experiments</a></li>
-        <li><a href="#results">Results &amp; Analysis</a></li>
+        <li>
+          <a href="#methods">Methods &amp; Experiments</a>
+          <ul>
+            <li><a href="#method1">Method 1</a></li>
+            <li><a href="#method2">Method 2</a></li>
+          </ul>
+        </li>
+        <li>
+          <a href="#results">Results &amp; Analysis</a>
+          <ul>
+            <li><a href="#results1">Results: Method 1</a></li>
+            <li><a href="#results2">Results: Method 2</a></li>
+          </ul>
+        </li>
         <li><a href="#conclusion">Conclusion &amp; Discussion</a></li>
         <li><a href="#references">References</a></li>
       </ul>
@@ -450,7 +473,7 @@
           <!-- METHODS -->
           <section id="methods">
             <h2>Methods &amp; Experiments</h2>
-            <h3>Method 1</h3>
+            <h3 id="method1">Method 1</h3>
             <h4>Phase 1: Voxel Memory Initialization</h4>
             <p>
               Eight ground‐truth RGB‐D captures of a 16³ random block world are fused into a 256³ voxel grid (voxel size 0.125 m). We back-project each pixel to update occupancy and color.
@@ -506,7 +529,7 @@
               </div>
             </div>
 
-          <h3 id="arthur">Method 2</h3>
+          <h3 id="method2">Method 2</h3>
 
           <h4>Phase 1: Scene Data Generation (Raw World)</h4>
           <p>
@@ -592,7 +615,7 @@
           <!-- RESULTS -->
           <section id="results">
             <h2>Results &amp; Analysis</h2>
-            <h3>Results: Method 1</h3>
+            <h3 id="results1">Results: Method 1</h3>
             <h4>Phase 1 Coverage & Depth Error</h4>
             <p><strong>Phase 1 – Baseline Diffusion (No Memory):</strong> In the first phase, the diffusion model was run with basic conditioning (an initial depth hint) but without any persistent memory of the scene. We found that while the model can produce photorealistic frames from a single viewpoint, it struggles with consistency across views. As the camera moves, the diffusion model often <em>hallucinates</em> new structures or forgets previously seen ones. For example, when the camera rotates to reveal unseen areas, the model has no knowledge of those regions and fails to generate coherent content there. We provided the model with a depth hint from the initial view via ControlNet, but once the viewpoint changed, this hint became misaligned with the true scene geometry. The <em>Depth Hint Absolute Error</em> heatmap in Figure 4 illustrates this issue: areas in bright colors indicate large discrepancies (up to ~25 meters) between the provided depth hint and the ground-truth depth after the camera moved. These large errors confirm that a single-view hint is insufficient for novel view synthesis – the diffusion model was essentially guessing content for regions outside the initial view, leading to inconsistency.</p>
             
@@ -668,7 +691,7 @@
               Average PSNR≈8.9 dB and SSIM≈0.43 reflect reasonable local texture plausibility but poor global consistency. Failures at 60°/150° align with zero coverage—no geometry to paint on.
             </p>
 
-            <h3 id="results-m2">Results: Method 2</h3>
+            <h3 id="results2">Results: Method 2</h3>
 
             <p>
               The grid below shows the <em>final</em> memory-conditioned videos for all nine
