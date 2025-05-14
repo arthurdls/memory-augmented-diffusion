@@ -539,20 +539,16 @@
           <div class="video-grid">
             <div class="video-item">
               <video src="images/arthur/raw/scene1.mp4" autoplay loop muted playsinline></video>
-              <figcaption>Raw Scene 1</figcaption>
+              <figcaption>Video 5: Raw Scene 1</figcaption>
             </div>
             <div class="video-item">
               <video src="images/arthur/raw/scene2.mp4" autoplay loop muted playsinline></video>
-              <figcaption>Raw Scene 2</figcaption>
+              <figcaption>Video 6: Raw Scene 2</figcaption>
             </div>
             <div class="video-item">
               <video src="images/arthur/raw/scene3.mp4" autoplay loop muted playsinline></video>
-              <figcaption>Raw Scene 3</figcaption>
+              <figcaption>Video 7: Raw Scene 3</figcaption>
             </div>
-            <!-- <div class="video-item">
-              <video src="images/arthur/control/scene1.mp4" autoplay loop muted playsinline></video>
-              <figcaption>Control Diffusion (no RGB-D) Scene 1</figcaption>
-            </div> -->
           </div>
 
           <h4>Phase 2: Scene Representation (TSDF Voxel Grid)</h4>
@@ -594,19 +590,19 @@
           <div class="image-comparison">
             <figure>
               <video src="images/arthur/raw/scene2.mp4"  autoplay loop muted playsinline></video>
-              <figcaption>Raw orbit (ground-truth RGB-D)</figcaption>
+              <figcaption>Video 8: Raw orbit (ground-truth RGB-D)</figcaption>
             </figure>
             <figure>
               <video src="images/arthur/control/scene2.mp4" autoplay loop muted playsinline></video>
-              <figcaption>Control diffusion (no memory)</figcaption>
+              <figcaption>Video 9: Control diffusion (no memory)</figcaption>
             </figure>
             <figure>
               <video src="images/arthur/generated/scene2.mp4" autoplay loop muted playsinline></video>
-              <figcaption>Memory-conditioned result</figcaption>
+              <figcaption>Video 10: Memory-conditioned result</figcaption>
             </figure>
           </div>
           <figcaption>
-            Figure N: For <strong>Scene 2</strong> (strength 0.5, voxel 0.10 m, truncation 0.30 m) the
+            Figure 4: For <strong>Scene 2</strong> (strength 0.5, voxel 0.10 m, truncation 0.30 m) the
             memory-conditioned run preserves the hill silhouette and tree trunks, whereas
             the control run completely reshuffles block colours and heights.
           </figcaption>
@@ -618,7 +614,7 @@
             <h2>Results &amp; Analysis</h2>
             <h3 id="results1">Results: Method 1</h3>
             <h4>Phase 1 Coverage & Depth Error</h4>
-            <p><strong>Phase 1 – Baseline Diffusion (No Memory):</strong> In the first phase, the diffusion model was run with basic conditioning (an initial depth hint) but without any persistent memory of the scene. We found that while the model can produce photorealistic frames from a single viewpoint, it struggles with consistency across views. As the camera moves, the diffusion model often <em>hallucinates</em> new structures or forgets previously seen ones. For example, when the camera rotates to reveal unseen areas, the model has no knowledge of those regions and fails to generate coherent content there. We provided the model with a depth hint from the initial view via ControlNet, but once the viewpoint changed, this hint became misaligned with the true scene geometry. The <em>Depth Hint Absolute Error</em> heatmap in Figure 4 illustrates this issue: areas in bright colors indicate large discrepancies (up to ~25 meters) between the provided depth hint and the ground-truth depth after the camera moved. These large errors confirm that a single-view hint is insufficient for novel view synthesis – the diffusion model was essentially guessing content for regions outside the initial view, leading to inconsistency.</p>
+            <p><strong>Phase 1 – Baseline Diffusion (No Memory):</strong> In the first phase, the diffusion model was run with basic conditioning (an initial depth hint) but without any persistent memory of the scene. We found that while the model can produce photorealistic frames from a single viewpoint, it struggles with consistency across views. As the camera moves, the diffusion model often <em>hallucinates</em> new structures or forgets previously seen ones. For example, when the camera rotates to reveal unseen areas, the model has no knowledge of those regions and fails to generate coherent content there. We provided the model with a depth hint from the initial view via ControlNet, but once the viewpoint changed, this hint became misaligned with the true scene geometry. The <em>Depth Hint Absolute Error</em> heatmap in Figure 5 illustrates this issue: areas in bright colors indicate large discrepancies (up to ~25 meters) between the provided depth hint and the ground-truth depth after the camera moved. These large errors confirm that a single-view hint is insufficient for novel view synthesis – the diffusion model was essentially guessing content for regions outside the initial view, leading to inconsistency.</p>
             
             <table>
               <tr><th>View</th><th>Coverage (%)</th></tr>
@@ -630,6 +626,7 @@
               <tr><td>6</td><td>67.29</td></tr>
               <tr><td>7</td><td>78.29</td></tr>
               <tr><td>8</td><td>91.18</td></tr>
+            <caption style="caption-side:bottom; margin-bottom:8px;"><strong>Table 2: Viewpoints vs Coverage</strong></caption>
             </table>
             
             <p>
@@ -639,7 +636,7 @@
             <figure>
               <img src="images/phase1_error.png" alt="Phase 1 Error Heatmap" style="max-width: 80%; max-height: 350px;">
               <figcaption>
-                Figure 4: Absolute depth error where hints exist. High errors (orange) occur at farthest surfaces. This heatmap shows where the depth hint provided to ControlNet is very inaccurate when the viewpoint changes, leading the diffusion model to hallucinate or distort scene content in those areas.
+                Figure 5: Absolute depth error where hints exist. High errors (orange) occur at farthest surfaces. This heatmap shows where the depth hint provided to ControlNet is very inaccurate when the viewpoint changes, leading the diffusion model to hallucinate or distort scene content in those areas.
               </figcaption>
             </figure>
             
@@ -666,26 +663,26 @@
             <div class="image-comparison">
               <figure>
                 <img src="images/eval_phase3_diffusion.png" alt="Phase 3 Diffusion Eval">
-                <figcaption>Figure 5a: Phase 3 Diffusion Evaluation</figcaption>
+                <figcaption>Figure 6a: Phase 3 Diffusion Evaluation</figcaption>
               </figure>
               <figure>
                 <img src="images/eval_phase3_consistency.png" alt="Phase 3 Consistency Eval">
-                <figcaption>Figure 5b: Phase 3 Consistency Evaluation</figcaption>
+                <figcaption>Figure 6b: Phase 3 Consistency Evaluation</figcaption>
               </figure>
             </div>
             <figcaption>
-              Figure 5: Quantitative evaluation of multi-view reconstruction for Phase 3. (a) <em>Phase 3 Diffusion Eval:</em> The green line shows coverage percentage as novel view angle increases; coverage drops from ~35% at 50° to 0% by 150°. The blue square indicates depth MAE at 50° (~14.8 m). (b) <em>Phase 3 Consistency Eval:</em> With consistency enforcement, coverage at 50° is slightly lower (~28%) but depth MAE improves to ~14.2 m, reflecting more accurate geometry.
+              Figure 6: Quantitative evaluation of multi-view reconstruction for Phase 3. (a) <em>Phase 3 Diffusion Eval:</em> The green line shows coverage percentage as novel view angle increases; coverage drops from ~35% at 50° to 0% by 150°. The blue square indicates depth MAE at 50° (~14.8 m). (b) <em>Phase 3 Consistency Eval:</em> With consistency enforcement, coverage at 50° is slightly lower (~28%) but depth MAE improves to ~14.2 m, reflecting more accurate geometry.
             </figcaption>
             
-            <p>The plots in Figure 5 summarize the multi-view consistency evaluation for Phase 3, comparing the Diffusion-only vs. Consistency-refined approaches. For Phase 3 Diffusion (Figure 5a), at a moderate viewpoint shift (~50°), coverage is about 35% – meaning the model manages to render roughly one-third of the true surfaces in that novel view. However, as the novel view angle grows (turning the camera to see the backside of the scene ~150° or more), coverage plummets to 0%.</p>
+            <p>The plots in Figure 6 summarize the multi-view consistency evaluation for Phase 3, comparing the Diffusion-only vs. Consistency-refined approaches. For Phase 3 Diffusion (Figure 6a), at a moderate viewpoint shift (~50°), coverage is about 35% – meaning the model manages to render roughly one-third of the true surfaces in that novel view. However, as the novel view angle grows (turning the camera to see the backside of the scene ~150° or more), coverage plummets to 0%.</p>
             
-            <p>In contrast, for Phase 3 Consistency (Figure 5b), the coverage at 50° is a bit lower (~28%). This slight drop is because the consistency method is conservative – it avoids counting surfaces unless they are well-supported by memory. However, the depth MAE for those that are rendered is lower (around 14.2 m at 50°), suggesting that Phase 3 Consistency's outputs, though covering slightly less area, are more geometrically accurate.</p>
+            <p>In contrast, for Phase 3 Consistency (Figure 6b), the coverage at 50° is a bit lower (~28%). This slight drop is because the consistency method is conservative – it avoids counting surfaces unless they are well-supported by memory. However, the depth MAE for those that are rendered is lower (around 14.2 m at 50°), suggesting that Phase 3 Consistency's outputs, though covering slightly less area, are more geometrically accurate.</p>
 
             <h4>Hallucinated RGB Quality</h4>
             <figure>
               <img src="images/quality_results.png" alt="Quality Metrics" style="max-width: 80%; max-height: 350px;">
               <figcaption>
-                Figure 6: PSNR & SSIM vs. held-out angle. High fidelity near seen views (30°, 120°) but plummets elsewhere (60°, 150°).
+                Figure 7: PSNR & SSIM vs. held-out angle. High fidelity near seen views (30°, 120°) but plummets elsewhere (60°, 150°).
               </figcaption>
             </figure>
             <p>
@@ -706,39 +703,39 @@
             <div class="video-grid">
               <div class="video-item">
                 <video src="images/arthur/generated/scene1.mp4" autoplay loop muted playsinline></video>
-                <figcaption>Scene&nbsp;1</figcaption>
+                <figcaption>Video 11: Generated Scene&nbsp;1</figcaption>
               </div>
               <div class="video-item">
                 <video src="images/arthur/generated/scene2.mp4" autoplay loop muted playsinline></video>
-                <figcaption>Scene&nbsp;2</figcaption>
+                <figcaption>Video 12: Generated Scene&nbsp;2</figcaption>
               </div>
               <div class="video-item">
                 <video src="images/arthur/generated/scene3.mp4" autoplay loop muted playsinline></video>
-                <figcaption>Scene&nbsp;3</figcaption>
+                <figcaption>Video 13: Generated Scene&nbsp;3</figcaption>
               </div>
               <div class="video-item">
                 <video src="images/arthur/generated/scene4.mp4" autoplay loop muted playsinline></video>
-                <figcaption>Scene&nbsp;4</figcaption>
+                <figcaption>Video 14: Generated Scene&nbsp;4</figcaption>
               </div>
               <div class="video-item">
                 <video src="images/arthur/generated/scene5.mp4" autoplay loop muted playsinline></video>
-                <figcaption>Scene&nbsp;5</figcaption>
+                <figcaption>Video 15: Generated Scene&nbsp;5</figcaption>
               </div>
               <div class="video-item">
                 <video src="images/arthur/generated/scene6.mp4" autoplay loop muted playsinline></video>
-                <figcaption>Scene&nbsp;6</figcaption>
+                <figcaption>Video 16: Generated Scene&nbsp;6</figcaption>
               </div>
               <div class="video-item">
                 <video src="images/arthur/generated/scene7.mp4" autoplay loop muted playsinline></video>
-                <figcaption>Scene&nbsp;7</figcaption>
+                <figcaption>Video 17: Generated Scene&nbsp;7</figcaption>
               </div>
               <div class="video-item">
                 <video src="images/arthur/generated/scene8.mp4" autoplay loop muted playsinline></video>
-                <figcaption>Scene&nbsp;8</figcaption>
+                <figcaption>Video 18: Generated Scene&nbsp;8</figcaption>
               </div>
               <div class="video-item">
                 <video src="images/arthur/generated/scene9.mp4" autoplay loop muted playsinline></video>
-                <figcaption>Scene&nbsp;9</figcaption>
+                <figcaption>Video 19: Generated Scene&nbsp;9</figcaption>
               </div>
             </div>
 
