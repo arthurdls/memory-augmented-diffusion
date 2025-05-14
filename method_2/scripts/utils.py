@@ -1,7 +1,7 @@
 import h5py
 import os
 import glob
-import cv2               # pip install opencv-python
+import cv2              
 import sys
 import shutil
 from PIL import Image

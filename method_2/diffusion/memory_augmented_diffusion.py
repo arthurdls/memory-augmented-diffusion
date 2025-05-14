@@ -6,13 +6,10 @@ import torch
 from PIL import Image
 import open3d as o3d
 from diffusers import StableDiffusionDepth2ImgPipeline
-from transformers import AutoImageProcessor, AutoModelForDepthEstimation
 from transformers import pipeline
 from open3d.visualization.rendering import OffscreenRenderer
-import cv2
-import torch.nn.functional as F
-import matplotlib.pyplot as plt
 import sys
+import matplotlib.pyplot as plt
 sys.path.append(os.getcwd())
 from memory.voxel_grid import VoxelGrid, make_intrinsics, render_from_tsdf
 

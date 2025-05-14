@@ -1,9 +1,0 @@
-# Core ML & graphics libs
-pip install torch torchvision torchaudio
-pip install numpy scipy pandas matplotlib open3d lpips
-# Diffusion & NeRF
-pip install diffusers transformers accelerate ninja
-
-# git clone https://github.com/kwsong0113/diffusion-forcing-transformer.git
-# cd diffusion-forcing-transformer
-# pip install -r requirements.txt               # DFoT deps :contentReference[oaicite:0]{index=0}
