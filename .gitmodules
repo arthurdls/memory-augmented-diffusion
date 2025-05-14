@@ -1,9 +1,0 @@
-[submodule "arthur/diffusion/diffusion-forcing-transformer"]
-	path = arthur/diffusion/diffusion-forcing-transformer
-	url = https://github.com/kwsong0113/diffusion-forcing-transformer.git
-[submodule "arthur/diffusion/FramePack"]
-	path = arthur/diffusion/FramePack
-	url = https://github.com/lllyasviel/FramePack.git
-[submodule "arthur/diffusion/diffusion-forcing"]
-	path = arthur/diffusion/diffusion-forcing
-	url = https://github.com/buoyancy99/diffusion-forcing
